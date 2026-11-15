@@ -18,6 +18,10 @@ const SUBJECTS_43 = [
   ["국어", 3], ["영어회화", 3], ["지구과학", 3], ["진로", 1], ["체육", 1], ["화학", 3],
   ["적분과 통계", 3], ["기하와 벡터", 3], ["물리", 3], ["한국사", 2], ["프로그래밍", 3], ["생명과학", 3],
 ];
+// 화면에 보이는 과목 이름. DB · 시간표 자료의 이름(영어회화)은 그대로 두고, 학생에게 보일 때만 바꿉니다.
+// 과목 이름을 화면에 그릴 때는 꼭 subjName() 을 거칩니다 (비교 · 저장에는 원래 이름).
+const SUBJECT_LABEL = { 영어회화: "영어" };
+const subjName = (s) => SUBJECT_LABEL[s] || s;
 const SUBJECT_CREDITS = Object.fromEntries(SUBJECTS_43);
 const TOTAL_CREDITS = SUBJECTS_43.reduce((a, [, c]) => a + c, 0);   // 31
 
@@ -1346,7 +1350,7 @@ async function openTtCell(ban, d, p) {
           ${dates.map((k) => `<div class="tt-date-row"><span class="tt-date">${md(parseDay(k))} (${d})</span>${btns(k, slotTeacher(ban, d, p, k))}</div>`).join("")}`
         : `<div class="study-foot" style="text-align:left">기말고사 전까지 남은 수업이 없어요.</div>`;
     }
-    openSheet(esc(s), `
+    openSheet(esc(subjName(s)), `
       <div class="asg-body">${ban}반 · ${d}요일 ${p}교시 (${st}–${en})</div>
       <label class="study-label">선생님${alt ? " (이번 주)" : ""}</label>
       <div class="tt-teacher">${now ? `<b>${esc(now)}</b>` : multi
@@ -1387,11 +1391,11 @@ function ttGridHtml(ban = myBan()) {
       if (!s) return `<td><div class="empty-cell"></div></td>`;
       if (!isSubject43(s)) return `<td><div class="class-cell common-cell"><div class="subj-name">${esc(s)}</div><div class="ban-name">전체</div></div></td>`;
       // 선생님 이름은 칸을 누르면 나옵니다 (openTtCell)
-      return `<td><div class="class-cell color-${colorIdx43(s)}" data-tcell="${ban}|${d}|${p}"><div class="subj-name">${esc(s)}</div></div></td>`;
+      return `<td><div class="class-cell color-${colorIdx43(s)}" data-tcell="${ban}|${d}|${p}"><div class="subj-name">${esc(subjName(s))}</div></div></td>`;
     }).join("") + "</tr>";
   }
   const used = SUBJECTS_43.map(([s]) => s).filter((s) => Object.values(tt).includes(s));
-  const legend = used.map((s) => `<div class="legend-item"><div class="legend-dot" style="background:${subjColor(s)}"></div><span>${esc(s)}</span></div>`).join("");
+  const legend = used.map((s) => `<div class="legend-item"><div class="legend-dot" style="background:${subjColor(s)}"></div><span>${esc(subjName(s))}</span></div>`).join("");
   return `<div class="timetable-wrap">
       <table class="timetable">
         <thead><tr><th></th>${TT_DAYS.map((d, i) => `<th class="day-header ${TT_DAY_CLASS[i]}">${d}요일</th>`).join("")}</tr></thead>
@@ -1559,7 +1563,7 @@ function bindTtCells() {
 }
 
 // ---------- 학점 계산 ----------
-// 1학년은 모두 필수 과목이라 12과목 모두 평균에 들어갑니다. (과목 학점 × 평점) 합 ÷ 고른 과목 학점 합.
+// 체육(GPA_SKIP)을 뺀 과목이 평균에 들어갑니다. (과목 학점 × 평점) 합 ÷ 고른 과목 학점 합.
 // 고른 등급은 이 기기에 학번별로 저장합니다 (처음엔 모두 A+).
 const GRADES = [["A+", 4.3], ["A0", 4.0], ["A-", 3.7], ["B+", 3.3], ["B0", 3.0], ["B-", 2.7], ["C+", 2.3], ["C0", 2.0], ["C-", 1.7], ["F", 0]];
 const GRADE_PT = Object.fromEntries(GRADES);
@@ -1569,42 +1573,46 @@ function gpaLoad() {
     const raw = localStorage.getItem(gpaKey());
     if (raw != null) return JSON.parse(raw) || {};
   } catch {}
-  return Object.fromEntries(SUBJECTS_43.map(([s]) => [s, "A+"]));
+  return Object.fromEntries(GPA_SUBJECTS.map(([s]) => [s, "A+"]));
 }
 function gpaSave(st) { try { localStorage.setItem(gpaKey(), JSON.stringify(st)); } catch {} }
 // P/F 과목: 전원 Pass 라 A+(4.3)로 넣어 계산하고, 학점 계산 칸에는 보이지 않습니다
-const PF_43 = new Set(["진로", "영어회화"]);
+const PF_43 = new Set(["진로"]);
+// 학점 계산에 넣지 않는 과목
+const GPA_SKIP = new Set(["체육"]);
+const GPA_SUBJECTS = SUBJECTS_43.filter(([s]) => !GPA_SKIP.has(s));
+const GPA_CREDITS = GPA_SUBJECTS.reduce((a, [, c]) => a + c, 0);   // 30
 function renderGpa() {
   const box = $("panel-gpa");
   if (!box) return;
   const st = gpaLoad();
   for (const s of PF_43) st[s] = "A+";
-  const graded = SUBJECTS_43.filter(([s]) => !PF_43.has(s));
+  const graded = GPA_SUBJECTS.filter(([s]) => !PF_43.has(s));
   let cred = 0, pts = 0;
-  for (const [s, c] of SUBJECTS_43) if (st[s] in GRADE_PT) { cred += c; pts += c * GRADE_PT[st[s]]; }
-  const pfCred = SUBJECTS_43.filter(([s]) => PF_43.has(s)).reduce((a, [, c]) => a + c, 0);
+  for (const [s, c] of GPA_SUBJECTS) if (st[s] in GRADE_PT) { cred += c; pts += c * GRADE_PT[st[s]]; }
+  const pfCred = GPA_SUBJECTS.filter(([s]) => PF_43.has(s)).reduce((a, [, c]) => a + c, 0);
   box.innerHTML = `
     <div class="gpa-hero">
       <div><div class="gpa-big">${cred ? (pts / cred).toFixed(2) : "–"}</div><div class="gpa-max">/ 4.30</div></div>
-      <div class="gpa-hero-tx"><b>평균 학점</b><br>입력한 ${cred}학점 기준 · 전체 ${TOTAL_CREDITS}학점<br>${cred < TOTAL_CREDITS
-        ? `<span style="color:var(--text-muted)">아직 ${TOTAL_CREDITS - cred}학점이 미입력이에요</span>` : '<span style="color:var(--accent3)">모든 과목 입력 완료</span>'}</div>
+      <div class="gpa-hero-tx"><b>평균 학점</b><br>입력한 ${cred}학점 기준 · 전체 ${GPA_CREDITS}학점<br>${cred < GPA_CREDITS
+        ? `<span style="color:var(--text-muted)">아직 ${GPA_CREDITS - cred}학점이 미입력이에요</span>` : '<span style="color:var(--accent3)">모든 과목 입력 완료</span>'}</div>
     </div>
     ${graded.map(([s, c]) => `<div class="gpa-row">
-      <div class="gpa-head"><span class="gpa-name">${esc(s)}</span><span class="gpa-cred">${c}학점</span></div>
+      <div class="gpa-head"><span class="gpa-name">${esc(subjName(s))}</span><span class="gpa-cred">${c}학점</span></div>
       <div class="gpa-grades">${GRADES.map(([g]) => `<button class="gpa-g${st[s] === g ? " on" : ""}${g === "F" ? " none" : ""}" data-gs="${esc(s)}" data-gg="${g}">${g}</button>`).join("")}</div>
     </div>`).join("")}
-    <div class="pf-note">P/F 과목 <b>${[...PF_43].join(" · ")}</b> (${pfCred}학점)은 전원 Pass라서 <b>A+(4.3)</b>로 자동 계산돼요. 따로 고를 필요 없어요.</div>
+    <div class="pf-note">P/F 과목 <b>${[...PF_43].map(subjName).join(" · ")}</b> (${pfCred}학점)은 전원 Pass라서 <b>A+(4.3)</b>로 자동 계산돼요. 따로 고를 필요 없어요.</div>
     <div class="gpa-actions">
       <button class="gpa-act" id="gpaAll">전부 A+로</button>
       <button class="gpa-act" id="gpaClear">전체 해제</button>
     </div>
-    <div class="gpa-note"><b>계산 방식</b> — (과목 학점 × 등급 평점)을 모두 더한 뒤, 등급을 고른 과목의 학점 합으로 나눠요. 1학년은 모든 과목이 필수라 12과목이 모두 들어가고, P/F 과목은 A+로 계산돼요. 등급을 고르지 않은 과목은 계산에서 빠지고, 같은 등급을 다시 누르면 해제돼요. 고른 등급은 이 기기에만 저장돼요.</div>`;
+    <div class="gpa-note"><b>계산 방식</b> — (과목 학점 × 등급 평점)을 모두 더한 뒤, 등급을 고른 과목의 학점 합으로 나눠요. 체육은 계산에 넣지 않고, P/F 과목은 A+로 계산돼요. 등급을 고르지 않은 과목은 계산에서 빠지고, 같은 등급을 다시 누르면 해제돼요. 고른 등급은 이 기기에만 저장돼요.</div>`;
   box.querySelectorAll("[data-gs]").forEach((b) => b.onclick = () => {
     const cur = gpaLoad();
     if (cur[b.dataset.gs] === b.dataset.gg) delete cur[b.dataset.gs]; else cur[b.dataset.gs] = b.dataset.gg;
     gpaSave(cur); renderGpa();
   });
-  $("gpaAll").onclick = () => { gpaSave(Object.fromEntries(SUBJECTS_43.map(([s]) => [s, "A+"]))); renderGpa(); };
+  $("gpaAll").onclick = () => { gpaSave(Object.fromEntries(GPA_SUBJECTS.map(([s]) => [s, "A+"]))); renderGpa(); };
   $("gpaClear").onclick = () => { gpaSave({}); renderGpa(); };
 }
 
@@ -1743,7 +1751,7 @@ function generateWallpaper() {
       const nameSize = Math.min(rowH * 0.32, cellW * 0.185);
       ctx.fillStyle = dark ? base : wpDarken(base, 0.45);
       ctx.font = `700 ${nameSize}px ${FONT}`;
-      const lines = wpWrap(ctx, subj, bw - S * 0.012);
+      const lines = wpWrap(ctx, subjName(subj), bw - S * 0.012);
       let ty = y + rowH / 2 - (lines.length * nameSize * 1.12) / 2 + nameSize * 0.95;
       lines.forEach((l) => { ctx.fillText(l, x + cellW / 2, ty); ty += nameSize * 1.12; });
     });
@@ -2008,7 +2016,7 @@ function card(a, opts = {}) {
   const editBtn = canEditAsg(a) ? `<button class="study-btn small" data-aedit="${a.id}">수정</button>` : "";
   const delBtn = canDelAsg(a) ? `<button class="study-btn small no" data-del="${a.id}">삭제</button>` : "";
   return `<div class="asg-card${done ? " done" : ""}">
-    <div class="asg-top"><span class="asg-subject">${esc(a.subject)} · ${esc(banLabel(a.ban))}</span>${badge}</div>
+    <div class="asg-top"><span class="asg-subject">${esc(subjName(a.subject))} · ${esc(banLabel(a.ban))}</span>${badge}</div>
     <div class="asg-title">${esc(a.title)}</div>
     ${a.body ? `<div class="asg-body${opts.check ? " clamp" : ""}">${esc(a.body)}</div>` : ""}
     <div class="asg-due"><span>${d.when ? `${d.when} 마감` : "마감 일시 미정"}</span>${a.author_name ? `<span class="asg-by">${esc(a.author_name)} 작성</span>` : ""}</div>
@@ -2300,7 +2308,7 @@ function agenda() {
     kind: "asg", id: a.id, title: a.title, at: new Date(a.due_at), end: null, allDay: false,
     color: "asg", done: cache.done.has(a.id) || new Date(a.due_at) < now, status: a.status,
     auto: !cache.done.has(a.id) && new Date(a.due_at) < now,
-    tag: `${a.subject} · ${banLabel(a.ban)}`,
+    tag: `${subjName(a.subject)} · ${banLabel(a.ban)}`,
   }));
   const evs = cache.events.map((e) => ({
     kind: "ev", id: e.id, title: e.title, at: new Date(e.starts_at), end: e.ends_at ? new Date(e.ends_at) : null,
@@ -2837,7 +2845,7 @@ function openNewForm(a) {
     <div class="asg-card">
       <label class="study-label">과목</label>
       <select class="study-input" id="nClass"${a ? " disabled" : ""}>
-        ${opts.map((o, i) => `<option value="${i}">${esc(o.subject)}${a && o.ban ? ` · ${esc(o.ban)}` : ""}</option>`).join("")}
+        ${opts.map((o, i) => `<option value="${i}">${esc(subjName(o.subject))}${a && o.ban ? ` · ${esc(o.ban)}` : ""}</option>`).join("")}
       </select>
       ${a || !myBan() ? "" : `<label class="study-label">대상</label>
       <div class="seg" id="nScope">
@@ -3038,7 +3046,7 @@ const periodLabel = (b) => (b.from === b.to ? `${b.from}교시` : `${b.from}–$
 
 function ttBlock(id, block, start, end) {
   return {
-    id, title: block.subject, display: "background", classNames: ["fcx-tt"], start, end,
+    id, title: subjName(block.subject), display: "background", classNames: ["fcx-tt"], start, end,
     extendedProps: { kind: "tt", label: periodLabel(block) },
   };
 }
@@ -3810,7 +3818,7 @@ function asgRow(a, showSubj = true) {
     <button class="asg-chk${done ? " on" : ""}" data-chk="asg:${a.id}" aria-label="${done ? "완료 취소" : "완료 표시"}">${done ? "✓" : ""}</button>
     <button class="asg-row-main" data-open="asg:${a.id}">
       <span class="due-badge ${d.tone}">${d.label}</span>
-      ${showSubj ? `<span class="ar-subj">${esc(a.subject)}</span>` : ""}
+      ${showSubj ? `<span class="ar-subj">${esc(subjName(a.subject))}</span>` : ""}
       <span class="ar-title">${esc(a.title)}</span>${stBadge(a.status)}
       <span class="ar-when">${a.due_at ? `${md(new Date(a.due_at))} ${hm(new Date(a.due_at))}` : "미정"}</span>
     </button>
@@ -3827,7 +3835,7 @@ function allAsgHtml(now) {
   else if (asgSort === "due") list = up.map((a) => asgRow(a)).join("");
   else list = [...new Set(up.map((a) => a.subject))].sort((x, y) => x.localeCompare(y, "ko")).map((s) => {
     const rows = up.filter((a) => a.subject === s);
-    return `<div class="ar-group">${esc(s)} <small>${rows.length}</small></div>` + rows.map((a) => asgRow(a, false)).join("");
+    return `<div class="ar-group">${esc(subjName(s))} <small>${rows.length}</small></div>` + rows.map((a) => asgRow(a, false)).join("");
   }).join("");
   return `<div class="asg-all-head"><div class="study-section">전체 수행평가 · 남은 ${left}건</div><div class="seg">${sortBtns}</div></div>
     <div class="asg-rows">${list}</div>`;
@@ -3881,7 +3889,7 @@ function noticeSubjects(now) {
 function subjBlock(sj) {
   const next = sj.left[0] ? asgDue(sj.left[0]) : null;
   return `<button class="subj-box${sj.left.length ? " has" : ""}${openSubj === sj.name ? " on" : ""}" data-subj="${esc(sj.name)}" aria-pressed="${openSubj === sj.name}">
-    <span class="subj-name">${esc(sj.name)}</span>
+    <span class="subj-name">${esc(subjName(sj.name))}</span>
     <span class="subj-ban">${esc(sj.ban)}</span>
     <span class="subj-meta">${next
       ? `<span class="due-badge ${next.tone}">${next.label}</span>${sj.left.length}건`
@@ -3891,7 +3899,7 @@ function subjBlock(sj) {
 
 function subjDetail(sj) {
   return `<div class="subj-detail">
-    <div class="study-section">${esc(sj.name)} 수행평가</div>
+    <div class="study-section">${esc(subjName(sj.name))} 수행평가</div>
     ${sj.up.length ? sj.up.map((a) => card(a, { check: true })).join("")
       : `<div class="study-empty">다가오는 수행평가가 없어요.</div>`}
     ${sj.past.length ? `<div class="study-section">지난 수행평가</div>` + sj.past.map((a) => card(a, { check: true })).join("") : ""}
