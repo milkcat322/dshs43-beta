@@ -546,6 +546,42 @@ function asgSoonCount() {
     && dueMs(a) >= now && dueMs(a) <= now + 72 * 3600 * 1000).length;
 }
 
+// ---------- 밑줄 탭 ----------
+// 고른 탭 아래의 밑줄(.tab-ink). 탭을 바꾸면 밑줄이 그 탭으로 미끄러져 갑니다 (움직임은 index.html 의 .tab-ink transition).
+// 탭 묶음을 통째로 다시 그려도(innerHTML) 직전 자리에서 출발하도록, 묶음 이름(key)마다 마지막 자리를 기억합니다.
+const inkAt = {};
+function moveInk(box, sel, key) {
+  if (!box) return;
+  box.dataset.ink = `${key}|${sel}`;
+  const on = box.querySelector(sel);
+  let ink = box.querySelector(":scope > .tab-ink");
+  const fresh = !ink;
+  if (fresh) { ink = document.createElement("span"); ink.className = "tab-ink"; box.append(ink); }
+  if (!on || !on.offsetWidth) { ink.style.opacity = "0"; return; }   // 고른 탭이 없거나 화면에 안 보임
+  const put = (p) => { ink.style.width = `${p.w}px`; ink.style.transform = `translate(${p.x}px, ${p.y}px)`; };
+  const to = { x: on.offsetLeft, y: on.offsetTop + on.offsetHeight - 1, w: on.offsetWidth };
+  if (fresh || ink.style.opacity === "0") {   // 새로 만든 밑줄: 직전 자리(없으면 도착 자리)에 먼저 놓고 나서 움직입니다
+    ink.style.transition = "none";
+    put(inkAt[key] || to);
+    void ink.offsetWidth;   // 위 자리를 먼저 그리게 합니다
+    ink.style.transition = "";
+  }
+  ink.style.opacity = "1";
+  put(to);
+  inkAt[key] = to;
+}
+// 화면 폭이 바뀌거나 글꼴이 늦게 오면 탭 자리가 달라지므로 밑줄을 다시 맞춥니다 (움직임 없이)
+function refitInks() {
+  document.querySelectorAll("[data-ink]").forEach((box) => {
+    const [key, sel] = box.dataset.ink.split("|");
+    delete inkAt[key];
+    box.querySelector(":scope > .tab-ink")?.remove();
+    moveInk(box, sel, key);
+  });
+}
+addEventListener("resize", refitInks);
+document.fonts?.addEventListener?.("loadingdone", refitInks);
+
 // ---------- 헤더 ----------
 function renderNav() {
   const nav = $("studyNav");
@@ -562,6 +598,8 @@ function renderNav() {
       return `<button class="study-btn${on(k) ? " primary" : ""}" data-page="${k}">${label}${n ? `<span class="tab-count">${n}</span>` : ""}</button>`;
     }).join("")
     : "";
+  nav.classList.toggle("plain", tabs !== PAGES);
+  moveInk(nav, ".study-btn.primary", "nav");
   // 설정(알림 · 학교 일정 · 계정)은 업데이트 옆에 늘 보입니다 (로그인 전에는 관리자 로그인을 여는 곳)
   const set = $("btnSettings");
   set.style.display = "";
@@ -1455,13 +1493,10 @@ function ttFind(q) {
 // 42기 사이트의 검색 칸과 같은 모양 (index.html 의 .search-section · #nameInput · .btn-search · .suggestions)
 function ttSearchHtml() {
   return `<div class="search-section">
-      <div class="search-label">학생 · 학번 · 반 검색</div>
-      <div class="search-row">
-        <div class="search-input-wrap">
-          <input type="text" id="nameInput" placeholder="이름·학번·반 (예: 유준우, 1409, 3반)" autocomplete="off" enterkeyhint="search">
-          <div class="suggestions" id="ttSugg"></div>
-        </div>
-        <button class="btn-search" id="ttGo" type="button">시간표 보기</button>
+      <div class="search-input-wrap">
+        <input type="text" id="nameInput" placeholder="이름·학번·반 (예: 유준우, 1409, 3반)" aria-label="학생 · 학번 · 반 검색" autocomplete="off" enterkeyhint="search">
+        <button class="btn-search" id="ttGo" type="button" aria-label="시간표 보기" title="시간표 보기">${icon("search")}</button>
+        <div class="suggestions" id="ttSugg"></div>
       </div>
     </div>`;
 }
@@ -1572,9 +1607,12 @@ function renderTimetable() {
     <div class="tab-panel${ttTab === "gpa" ? " active" : ""}" id="panel-gpa"></div>
     <div class="tab-panel${ttTab === "wp" ? " active" : ""}" id="panel-wp">${wpPanelHtml()}</div>`;
   paintAvatar();
+  const ttTabs = $("studyView").querySelector(".tabs");
+  moveInk(ttTabs, ".tab-btn.active", "tt");
   $("studyView").querySelectorAll("[data-ttab]").forEach((b) => b.onclick = () => {
     ttTab = b.dataset.ttab;
     $("studyView").querySelectorAll("[data-ttab]").forEach((x) => x.classList.toggle("active", x === b));
+    moveInk(ttTabs, ".tab-btn.active", "tt");
     $("studyView").querySelectorAll(".tab-panel").forEach((p) => p.classList.toggle("active", p.id === `panel-${ttTab}`));
     if (ttTab === "wp") generateWallpaper();
   });
