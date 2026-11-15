@@ -27,6 +27,7 @@ const TOTAL_CREDITS = SUBJECTS_43.reduce((a, [, c]) => a + c, 0);   // 31
 
 let sb = null;
 let me = null;          // { id, username, student_id, name, is_admin }
+let myAvatar = "";      // 내 프로필 사진 주소 (Gravatar. setAvatar 가 채움)
 let myClasses = [];     // 내 수강 과목 [{ subject, ban }] (43기는 모든 과목 ban: null)
 let cache = { items: [], pending: [], mine: [], events: [], done: new Set(), people: new Map(), todos: null, todoGroups: null, school: [] };
 let page = "cal";       // 열린 탭: cal(내 일정) | notice(수행평가) | todo(할 일)
@@ -485,6 +486,7 @@ async function loadProfile() {
   if (!data) { me = null; clearSnap(); return; }
   netDown = false;
   setMe(data);
+  setAvatar(session.user.email);
   saveSnap();
   keepStorage();
   if (silentState()?.off) silentState({ off: false });   // 다시 로그인했으니 다음에 로그인 기록이 없어지면 조용한 로그인을 다시 씁니다
@@ -493,6 +495,33 @@ function setMe(data) {
   me = data;
   // 43기는 시간표(분반) 자료가 아직 없고 모두 같은 과목을 함께 들으므로, 누구나 43기 과목 전체 · 분반 없음(ban: null = 전체 분반)
   myClasses = allClassList();
+}
+
+// 프로필 사진: 로그인 이메일로 Gravatar(gravatar.com)에 올려 둔 사진을 씁니다. 주소에는 이메일 대신 그 SHA-256 값만 들어갑니다.
+// 올려 둔 사진이 없으면 Gravatar 가 이메일마다 다른 무늬(identicon)를 주고, 사진을 못 받으면(오프라인 등) 이름 첫 글자가 그대로 보입니다.
+// 다른 학생은 이메일을 알 수 없어 이름 첫 글자만 보입니다.
+async function setAvatar(email) {
+  const mail = (email || "").trim().toLowerCase();
+  if (!mail || setAvatar.mail === mail) return;
+  setAvatar.mail = mail;
+  myAvatar = "";
+  try {
+    const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(mail));
+    if (setAvatar.mail !== mail) return;   // 그사이 다른 계정으로 바뀜
+    const hash = [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+    myAvatar = `https://gravatar.com/avatar/${hash}?s=160&d=identicon&r=g`;
+    paintAvatar();
+  } catch {}
+}
+// 내 프로필 칸(.student-avatar[data-me])에 사진을 얹습니다. 다 받은 뒤에 얹으므로 그 전에는 이름 첫 글자가 보입니다.
+function paintAvatar() {
+  const box = document.querySelector(".student-avatar[data-me]");
+  if (!box || !myAvatar || box.querySelector("img")) return;
+  const img = new Image();
+  img.alt = "";
+  img.referrerPolicy = "no-referrer";
+  img.onload = () => { if (!box.querySelector("img")) box.append(img); };
+  img.src = myAvatar;
 }
 
 // 수강 과목: { subject, ban }. 분반이 생기면 여기서 학생마다 ban 을 채웁니다.
@@ -1389,13 +1418,14 @@ function ttGridHtml(ban = myBan()) {
     rows += `<tr><td class="period-col">${p}</td>` + TT_DAYS.map((d) => {
       const s = tt[`${d}-${p}`];
       if (!s) return `<td><div class="empty-cell"></div></td>`;
-      if (!isSubject43(s)) return `<td><div class="class-cell common-cell"><div class="subj-name">${esc(s)}</div><div class="ban-name">전체</div></div></td>`;
+      if (!isSubject43(s)) return `<td class="common-cell"><div class="class-cell"><div class="subj-name">${esc(s)}</div><div class="ban-name">전체</div></div></td>`;
       // 선생님 이름은 칸을 누르면 나옵니다 (openTtCell)
-      return `<td><div class="class-cell color-${colorIdx43(s)}" data-tcell="${ban}|${d}|${p}"><div class="subj-name">${esc(subjName(s))}</div></div></td>`;
+      // 색은 칸(td)에 칠합니다: 여백 없이 칸을 꽉 채우도록
+      return `<td class="color-${colorIdx43(s)}" data-tcell="${ban}|${d}|${p}"><div class="class-cell"><div class="subj-name">${esc(subjName(s))}</div></div></td>`;
     }).join("") + "</tr>";
   }
   const used = SUBJECTS_43.map(([s]) => s).filter((s) => Object.values(tt).includes(s));
-  const legend = used.map((s) => `<div class="legend-item"><div class="legend-dot" style="background:${subjColor(s)}"></div><span>${esc(subjName(s))}</span></div>`).join("");
+  const legend = used.map((s) => `<div class="legend-item"><div class="legend-dot color-${colorIdx43(s)}"></div><span>${esc(subjName(s))}</span></div>`).join("");
   return `<div class="timetable-wrap">
       <table class="timetable">
         <thead><tr><th></th>${TT_DAYS.map((d, i) => `<th class="day-header ${TT_DAY_CLASS[i]}">${d}요일</th>`).join("")}</tr></thead>
@@ -1525,7 +1555,7 @@ function renderTimetable() {
   const weekly = Object.values(myTimetable()).filter(isSubject43).length;   // 수업 외 활동은 빼고
   $("studyView").innerHTML = ttSearchHtml() + `
     <div class="student-profile">
-      <div class="student-avatar">${esc(name[0] || "?")}</div>
+      <div class="student-avatar" data-me>${esc(name[0] || "?")}</div>
       <div class="student-info"><h2>${esc(name)}</h2><div class="student-meta">학번 ${esc(sid ?? "")} · 1학년 ${myBan() ? `${myBan()}반 · ` : ""}${semesterLabel()}</div></div>
     </div>
     ${sid ? '<div class="my-status" id="myStatus"></div>' : ""}
@@ -1541,6 +1571,7 @@ function renderTimetable() {
     <div class="tab-panel${ttTab === "tt" ? " active" : ""}" id="panel-tt">${ttGridHtml()}</div>
     <div class="tab-panel${ttTab === "gpa" ? " active" : ""}" id="panel-gpa"></div>
     <div class="tab-panel${ttTab === "wp" ? " active" : ""}" id="panel-wp">${wpPanelHtml()}</div>`;
+  paintAvatar();
   $("studyView").querySelectorAll("[data-ttab]").forEach((b) => b.onclick = () => {
     ttTab = b.dataset.ttab;
     $("studyView").querySelectorAll("[data-ttab]").forEach((x) => x.classList.toggle("active", x === b));
@@ -1726,7 +1757,7 @@ function generateWallpaper() {
     ctx.fillStyle = dark ? WP_DAY_COLORS[i] : wpDarken(WP_DAY_COLORS[i], 0.35);
     ctx.fillText(d, gridX + periodW + cellW * (i + 0.5), gridTop + headH * 0.75);
   });
-  const gap = Math.max(2, S * 0.005), radius = S * 0.016;
+  const gap = Math.max(2, S * 0.005), radius = 0;   // 화면과 같이 각진 칸
   for (let p = 1; p <= maxPeriod; p++) {
     const y = gridTop + headH + rowH * (p - 1);
     ctx.textAlign = "center";
