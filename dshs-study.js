@@ -634,7 +634,7 @@ async function maybePushCard() {
   const anchor = $("myStatus");
   if (!anchor || $("pushCard")) return;   // 그 사이 화면이 바뀐 경우
   anchor.insertAdjacentHTML("afterend",
-    '<div class="my-status" id="pushCard"><span id="pushCardMsg">🔔 수행평가 마감 1일 · 6시간 전에 알려 드릴까요?</span>' +
+    '<div class="my-status" id="pushCard"><span id="pushCardMsg">' + icon("notifications") + ' 수행평가 마감 1일 · 6시간 전에 알려 드릴까요?</span>' +
     '<span style="margin-left:auto;display:flex;gap:6px"><button class="study-btn" id="pushCardYes">알림 받기</button>' +
     '<button class="study-btn" id="pushCardLater">나중에</button></span></div>');
   $("pushCardLater").onclick = () => {
@@ -645,7 +645,7 @@ async function maybePushCard() {
     const card = $("pushCard");
     const finish = (msg, ms) => {
       if (!card.isConnected) return;
-      card.textContent = msg;
+      card.innerHTML = msg;   // msg 는 아래의 고정 문구 (아이콘 포함)
       setTimeout(() => card.remove(), ms);
     };
     $("pushCardYes").disabled = true;
@@ -653,7 +653,7 @@ async function maybePushCard() {
     if (pushOn) {
       try { localStorage.setItem(PUSH_PREF, "on"); } catch {}
       pushCardSave({ done: true });
-      finish("🔔 알림이 켜졌어요", 2500);
+      finish(icon("notifications_active") + " 알림이 켜졌어요", 2500);
     } else if (Notification.permission === "denied") {
       pushCardSave({ done: true });
       finish("브라우저 설정에서 알림을 허용해야 해요", 6000);
@@ -697,7 +697,7 @@ async function maybeOnboard() {
   if (push) {
     steps.push(`<b>알림 켜기</b>
       <div class="ev-hint">수행평가 마감 1일 · 6시간 전, 일정 30분 전에 알려 줘요</div>
-      <button class="study-btn ok" id="onbPush">🔔 알림 켜기</button>`);
+      <button class="study-btn ok" id="onbPush">${icon("notifications")} 알림 켜기</button>`);
   } else if (iosPushLater) {
     steps.push(`<b>알림 켜기</b>
       <div class="ev-hint">아이폰은 홈 화면에 추가한 앱에서만 알림을 켤 수 있어요</div>
@@ -707,7 +707,7 @@ async function maybeOnboard() {
     <div class="asg-body">로그인했어요! 두 가지만 해 두면 더 편하게 쓸 수 있어요.</div>
     ${steps.map((s, i) => `<div class="onb-step"><div class="ios-num">${i + 1}</div><div class="onb-body">${s}</div></div>`).join("")}
     <button class="study-submit ghost" id="onbLater">나중에 할게요</button>
-    <div class="study-foot">설정(⚙️)에서 언제든 알림을 켜고 끌 수 있어요.</div>`);
+    <div class="study-foot">설정(${icon("settings")})에서 언제든 알림을 켜고 끌 수 있어요.</div>`);
   $("onbLater").onclick = closeModal;
   if ($("onbInstall")) $("onbInstall").onclick = async () => {
     const d = window.__deferredInstall;
@@ -716,7 +716,7 @@ async function maybeOnboard() {
       d.prompt();
       const res = await d.userChoice;
       window.__deferredInstall = null;
-      if (res?.outcome === "accepted" && $("onbInstall")) $("onbInstall").outerHTML = '<div class="onb-text">✅ 설치했어요</div>';
+      if (res?.outcome === "accepted" && $("onbInstall")) $("onbInstall").outerHTML = '<div class="onb-text">' + icon("check_circle", "ok") + ' 설치했어요</div>';
     } catch { window.__deferredInstall = null; }
   };
   if ($("onbPush")) $("onbPush").onclick = async () => {
@@ -727,7 +727,7 @@ async function maybeOnboard() {
       try { localStorage.setItem(PUSH_PREF, "on"); } catch {}
       pushCardSave({ done: true });
       $("pushCard")?.remove();
-      if (b.isConnected) b.outerHTML = '<div class="onb-text">🔔 알림이 켜졌어요</div>';
+      if (b.isConnected) b.outerHTML = '<div class="onb-text">' + icon("notifications_active") + ' 알림이 켜졌어요</div>';
       paintPush();
     } else {
       b.disabled = false;
@@ -809,7 +809,7 @@ function iosGuideHtml() {
 function openIosGuide() { openSheet("홈 화면에 추가하기", iosGuideHtml()); }
 // 설정 창: 아이폰 · 아이패드 브라우저에서만 '홈 화면에 추가하는 방법' (안드로이드는 위쪽 설치 막대가 있음)
 const homeGuideHtml = () => (isAppleMobile() && !isStandalone()
-  ? '<button class="study-btn wide" id="setHomeGuide" type="button">📲 홈 화면에 추가하는 방법</button>' : "");
+  ? '<button class="study-btn wide" id="setHomeGuide" type="button">' + icon("install_mobile") + ' 홈 화면에 추가하는 방법</button>' : "");
 function bindHomeGuide() { if ($("setHomeGuide")) $("setHomeGuide").onclick = openIosGuide; }
 
 // ---------- 내 위치 ----------
@@ -892,10 +892,10 @@ const locHtml = (r) => {
   const sh = seatInfo(r.student_id);
   return r.location === SEAT_PLACE && sh ? `자습실 ${seatLink(sh)}` : esc(r.location);
 };
-// 위치가 '자습실 자리'가 아닌데 자리를 공개한 학생: 위치 뒤(또는 위치 없이) 💺 a101
+// 위치가 '자습실 자리'가 아닌데 자리를 공개한 학생: 위치 뒤(또는 위치 없이) 자리 아이콘 a101
 const seatChip = (sid) => {
   const sh = seatInfo(sid);
-  return sh && statusMap.get(sid)?.location !== SEAT_PLACE ? `<span class="st-chip">💺 ${seatLink(sh)}</span>` : "";
+  return sh && statusMap.get(sid)?.location !== SEAT_PLACE ? `<span class="st-chip">${icon("event_seat")} ${seatLink(sh)}</span>` : "";
 };
 // ---------- 자습실 배치도 ----------
 // seat-a.jpg · seat-b.jpg 는 자습실 평면도(가운데 세미나실 · 계단을 빼고 A · B 두 곳으로 자름) 이고,
@@ -994,7 +994,7 @@ function paintStatus(root = document) {
     const mine = sid === me?.student_id && $("myStatus");   // 내 위치 · 자리는 위의 내 위치 줄에
     const r = me && !mine ? statusMap.get(sid) : null;
     const chip = me && !mine ? seatChip(sid) : "";
-    el.innerHTML = (r ? `📍 ${locHtml(r)} <small>${whenLabel(r.updated_at)}</small>` : "") + (r && chip ? " " : "") + chip;
+    el.innerHTML = (r ? `${icon("location_on")} ${locHtml(r)} <small>${whenLabel(r.updated_at)}</small>` : "") + (r && chip ? " " : "") + chip;
     el.classList.toggle("old", !!r && !chip && Date.now() - new Date(r.updated_at) > STATUS_OLD);
   });
   paintMyStatus();
@@ -1005,7 +1005,7 @@ function paintMyStatus() {
   if (!box) return;
   if (!me?.student_id) { box.remove(); return; }
   const sid = me.student_id, r = statusMap.get(sid);
-  box.innerHTML = `<span class="ms-label">📍 내 위치</span>
+  box.innerHTML = `<span class="ms-label">${icon("location_on")} 내 위치</span>
     <b>${r ? locHtml(r) : "아직 안 정했어요"}</b>${r ? `<small>${whenLabel(r.updated_at)} 수정</small>` : ""}${seatChip(sid)}
     <button class="study-btn small" id="msEdit">${r ? "바꾸기" : "정하기"}</button>
     ${seatWanted(sid) && !seatInfo(sid) ? seatNote() : ""}`;
@@ -1531,7 +1531,7 @@ function renderTimetable() {
       <div class="stat-chip"><span class="stat-num">${weekly || "–"}</span><span class="stat-label">주간 수업 교시</span></div>
     </div>
     <div class="tabs">
-      ${[["tt", "📅 시간표"], ["gpa", "🎓 학점 계산"], ["wp", "🖼 배경화면"]].map(([k, l]) =>
+      ${[["tt", icon("calendar_view_week") + " 시간표"], ["gpa", icon("school") + " 학점 계산"], ["wp", icon("wallpaper") + " 배경화면"]].map(([k, l]) =>
         `<button class="tab-btn${ttTab === k ? " active" : ""}" data-ttab="${k}">${l}</button>`).join("")}
     </div>
     <div class="tab-panel${ttTab === "tt" ? " active" : ""}" id="panel-tt">${ttGridHtml()}</div>
@@ -1626,13 +1626,13 @@ function wpPanelHtml() {
   return `
     <div class="wp-controls">
       <div><div class="wp-group-label">해상도</div><select class="wp-select" id="wpSize">${opts}</select></div>
-      <div><div class="wp-group-label">배치</div><div class="wp-chips">${chip("layout", "lock", "🔒 잠금화면 (시계 여백)")}${chip("layout", "home", "📱 홈화면 (꽉 채움)")}</div></div>
-      <div><div class="wp-group-label">테마</div><div class="wp-chips">${chip("theme", "dark", "🌙 다크")}${chip("theme", "light", "☀️ 라이트")}</div></div>
+      <div><div class="wp-group-label">배치</div><div class="wp-chips">${chip("layout", "lock", icon("lock") + " 잠금화면 (시계 여백)")}${chip("layout", "home", icon("smartphone") + " 홈화면 (꽉 채움)")}</div></div>
+      <div><div class="wp-group-label">테마</div><div class="wp-chips">${chip("theme", "dark", icon("dark_mode") + " 다크")}${chip("theme", "light", icon("light_mode") + " 라이트")}</div></div>
     </div>
     <div class="wp-preview-area">
       <div class="wp-frame"><img id="wpPreview" alt="배경화면 미리보기"></div>
       <div class="wp-size-note" id="wpSizeNote">—</div>
-      <button class="wp-save" id="wpSave">⬇ 배경화면 저장하기</button>
+      <button class="wp-save" id="wpSave">${icon("download")} 배경화면 저장하기</button>
     </div>
     <div class="wp-tip">
       <strong>아이폰</strong>이면 저장이 안 될 때 위 미리보기를 <strong>길게 눌러 "사진에 추가"</strong>를 선택하세요.<br>
@@ -1864,9 +1864,9 @@ async function renderMeal(key) {
       </div>
     </div>
     <div class="meal-nav">
-      <button class="study-btn" id="mealPrev" aria-label="전날">◀</button>
+      <button class="study-btn" id="mealPrev" aria-label="전날">${icon("chevron_left")}</button>
       <button class="meal-day" id="mealToday" title="오늘로">${d.getMonth() + 1}월 ${d.getDate()}일 (${"일월화수목금토"[d.getDay()]})${rel ? ` <span class="meal-rel">${rel}</span>` : ""}</button>
-      <button class="study-btn" id="mealNext" aria-label="다음 날">▶</button>
+      <button class="study-btn" id="mealNext" aria-label="다음 날">${icon("chevron_right")}</button>
     </div>
     <div id="mealBody"><div class="study-empty">불러오는 중…</div></div>
     <div class="study-foot meal-legend">알레르기 번호 · ${ALLERGY.slice(1).map((a, i) => `${i + 1} ${a}`).join(" · ")}</div>`;
@@ -2865,7 +2865,7 @@ function openNewForm(a) {
         : "과목은 바꿀 수 없어요. 바꾸려면 지우고 다시 추가해 주세요."
         : "처음에는 나만 보이고, 관리자가 승인하면 43기 친구들에게도 보여요."}</div>
     </div>
-    ${a?.personal ? '<button class="study-btn wide" id="nReset">↩ 원래 내용으로 되돌리기</button>' : ""}
+    ${a?.personal ? '<button class="study-btn wide" id="nReset">' + icon("undo") + ' 원래 내용으로 되돌리기</button>' : ""}
     <button class="study-btn wide" id="backFeed">← 목록으로</button>`;
   $("backFeed").onclick = renderNotice;
   if ($("nReset")) $("nReset").onclick = async () => {
@@ -3045,7 +3045,7 @@ function ttBlock(id, block, start, end) {
 
 // ---------- 피드백 ----------
 // 로그인한 사용자가 보내고 관리자가 읽습니다. 스크린샷은 비공개 버킷 feedback 에 저장합니다.
-// 보내기는 📢 업데이트 창의 '피드백' 탭에서, 받은 피드백은 관리자 사이트(admin/)의 관리 탭에서 봅니다.
+// 보내기는 업데이트 창의 '피드백' 탭에서, 받은 피드백은 관리자 사이트(admin/)의 관리 탭에서 봅니다.
 const FEEDBACK_KINDS = { bug: "오류 제보", notice: "전체 분반 공지 오류", idea: "기능 제안", etc: "기타" };
 const FEEDBACK_HINT = {
   bug: "어떤 화면에서 무엇을 했을 때 문제가 생겼는지 적어 주세요",
@@ -3065,7 +3065,7 @@ async function shrinkImage(file) {
   return new Promise((ok, no) => c.toBlob((b) => (b ? ok(b) : no(new Error("empty"))), "image/jpeg", 0.85));
 }
 
-// 📢 업데이트 창의 '피드백' 탭 (index.html 이 부릅니다). 머리의 '업데이트 내역' 을 누르면 업데이트 창으로 돌아갑니다.
+// 업데이트 창의 '피드백' 탭 (index.html 이 부릅니다). 머리의 '업데이트 내역' 을 누르면 업데이트 창으로 돌아갑니다.
 function openFeedback() {
   const head = window.updTabs ? window.updTabs("fb") : "피드백";
   const back = () => $("studyModal").querySelector('[data-utab="upd"]')?.addEventListener("click", () => { closeModal(); window.openUpdates?.(); });
@@ -3115,7 +3115,7 @@ window.openFeedback = openFeedback;
 
 // ---------- 피드백 답장 (feedbackreply.sql) ----------
 // 관리자가 관리자 사이트에서 남긴 답장을 피드백 창의 '내가 보낸 피드백'에서 읽고, 그 아래에서 다시 답합니다.
-// 안 읽은 답장이 있으면 📢 버튼과 '피드백' 탭에 점을 찍고, 창을 열면 읽음으로 바꿉니다.
+// 안 읽은 답장이 있으면 업데이트 버튼과 '피드백' 탭에 점을 찍고, 창을 열면 읽음으로 바꿉니다.
 let fbUnread = 0, fbCheckedAt = 0;
 const fbFromAdmin = (r) => r.from_admin !== false;   // 관리자가 쓴 답장 (false 면 내가 다시 쓴 답글)
 function paintFbDot() {
