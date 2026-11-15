@@ -1,15 +1,42 @@
 // dshs43.app — 서비스 워커
-// 프론트 파일(index.html · dshs-study.js 등)을 바꾼 뒤에는 아래 CACHE 버전 숫자를 꼭 올려주세요.
+// 프론트 파일(index.html · css/ · js/ 등)을 바꾼 뒤에는 아래 CACHE 버전 숫자를 꼭 올려주세요.
 // 42기 사이트(dshs-study-v…)와 이름이 겹치지 않게 dshs43- 으로 시작합니다.
-const CACHE = 'dshs43-v27';
+const CACHE = 'dshs43-v28';
 
 const SHELL = [
   './',
   './index.html',
   './manifest.webmanifest',
   './config.js',
-  './dshs-study.js',
   './updates.js',
+  // 스타일 · 스크립트: index.html 이 읽는 파일을 모두 적습니다 (빠지면 새 버전과 옛 파일이 섞일 수 있음. node scripts/check.mjs 가 확인)
+  './css/base.css',
+  './css/timetable.css',
+  './css/app.css',
+  './css/study.css',
+  './css/calendar.css',
+  './css/events.css',
+  './css/mobile.css',
+  './css/themes.css',
+  './js/install.js',
+  './js/updates-popup.js',
+  './js/header-scroll.js',
+  './js/core.js',
+  './js/start.js',
+  './js/shell.js',
+  './js/seat.js',
+  './js/login.js',
+  './js/timetable.js',
+  './js/meal.js',
+  './js/calendar.js',
+  './js/events.js',
+  './js/feedback.js',
+  './js/school.js',
+  './js/dshs-login.js',
+  './js/notice.js',
+  './js/todo.js',
+  './js/push.js',
+  './js/main.js',
   './icon-144.png',
   './icon-192.png',
   './icon-256.png',

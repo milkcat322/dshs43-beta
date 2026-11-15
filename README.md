@@ -10,7 +10,7 @@
 - 마감 · 일정 알림 (웹 푸시), 피드백, 내 위치, 화면 테마
 - 로그인은 dshs.app 계정으로 (회원가입 화면 없음)
 
-**시간표는 아직 없습니다.** 43기 시간표가 나오면 42기 사이트처럼 시간표 화면 · 달력의 수업 블록 · 분반을 추가합니다 (`dshs-study.js` 의 `allClassList` · `roster` · `PERIOD_TIME` 참고).
+**시간표는 아직 없습니다.** 43기 시간표가 나오면 42기 사이트처럼 시간표 화면 · 달력의 수업 블록 · 분반을 추가합니다 (`js/` 의 `allClassList` · `roster` · `PERIOD_TIME` 참고).
 
 ## 백엔드: 42기와 같은 Supabase DB
 
@@ -38,8 +38,11 @@
 
 | 파일 | 내용 |
 | --- | --- |
-| `index.html` | 화면 · 스타일 · 테마 · 설치 안내 · 업데이트 팝업 |
-| `dshs-study.js` | 로그인 · 수행평가 · 내 일정 · 할 일 · 급식 · 알림 등 (전역 스코프 모듈, 맨 끝 `init();`) |
+| `index.html` | 화면(마크업) · 아이콘 모음 · 화면 테마를 먼저 정하는 짧은 스크립트 |
+| `css/` | 스타일 8개. `index.html` 에 적힌 순서대로 읽음: `base`(색 · 바탕 · 시작하기) → `timetable`(시간표 · 탭) → `app`(설치 안내 · 아이콘 · 자습실 · 피드백) → `study`(버튼 · 창 · 입력칸 · 학점 · 급식) → `calendar`(달력) → `events`(일정 상세 · 할 일 · 댓글) → `mobile`(폰 화면) → `themes`(화면 테마) |
+| `js/` | 스크립트. 모듈이 아니라 전역 스코프를 함께 쓰며 `index.html` 에 적힌 순서대로 읽음: `core`(설정 · 과목 · 유틸) · `start`(시작 · 로그인 유지) · `shell`(메뉴 · 안내) · `seat`(내 위치 · 자습실) · `login` · `timetable`(시간표 · 학점 · 배경화면) · `meal`(급식) · `calendar`(달력 · 목록) · `events`(일정 · 댓글 · 그룹) · `feedback` · `school`(학사일정 · dshs.app 신청) · `dshs-login`(dshs.app 로그인 · 명단) · `notice`(수행평가 탭) · `todo`(할 일) · `push`(알림) · `main`(맨 끝 `init();`) |
+| `js/install.js` · `js/updates-popup.js` · `js/header-scroll.js` | 앱 설치 안내와 진단 · 업데이트 팝업 · 폰에서 로고 움직임 (화면 아래쪽에서 바로 읽는 스크립트) |
+| `scripts/check.mjs` | 프론트 파일을 고친 뒤 확인: `node scripts/check.mjs` (문법 · 겹치는 이름 · `init();` · 파일 목록) |
 | `config.js` | Supabase 공개 설정 (anon 키만) |
 | `sw.js` | 서비스 워커 (캐시 · 푸시). `CACHE` 이름은 `dshs43-v…` |
 | `updates.js` | 학생에게 보이는 업데이트 소식 |
