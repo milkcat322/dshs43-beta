@@ -97,7 +97,7 @@ function renderTodo() {
   body.innerHTML = `
     <div class="todo-add">
       <input class="study-input" id="tdTitle" maxlength="200" placeholder="할 일을 적고 Enter">
-      <button class="study-btn primary" id="tdAdd">추가</button>
+      <button class="field-btn" id="tdAdd" type="button" aria-label="할 일 추가" title="할 일 추가">${icon("add")}</button>
     </div>
     ${todayList.length || open.length ? `<div class="td-todaybox">
       <div class="study-section td-head">오늘 할 일 ${todayList.length}개</div>

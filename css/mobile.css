@@ -48,7 +48,9 @@
   .search-section { margin-bottom: 14px; }
   #nameInput { padding: 10px 46px 10px 12px; text-overflow: ellipsis; }
   #nameInput::placeholder { font-size: 14px; }
-  .btn-search { right: 3px; width: 38px; height: 38px; }
+  .btn-search, .field-btn { right: 3px; width: 38px; height: 38px; }
+  .todo-add #tdTitle { padding: 10px 46px 10px 12px; text-overflow: ellipsis; }
+  .todo-add #tdTitle::placeholder { font-size: 14px; }
   .welcome-state { padding: 24px 12px; }
 
   /* 시간표 화면 */
