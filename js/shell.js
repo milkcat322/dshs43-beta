@@ -189,8 +189,8 @@ async function maybePushCard() {
   if (!anchor || $("pushCard")) return;   // 그 사이 화면이 바뀐 경우
   anchor.insertAdjacentHTML("afterend",
     '<div class="my-status" id="pushCard"><span id="pushCardMsg">' + icon("notifications") + ' 수행평가 마감 1일 · 6시간 전에 알려 드릴까요?</span>' +
-    '<span style="margin-left:auto;display:flex;gap:6px"><button class="study-btn" id="pushCardYes">알림 받기</button>' +
-    '<button class="study-btn" id="pushCardLater">나중에</button></span></div>');
+    '<span style="margin-left:auto;display:flex;gap:6px"><button class="ms-btn" id="pushCardYes" type="button" aria-label="알림 받기" title="알림 받기">' + icon("notifications_active") + '</button>' +
+    '<button class="ms-btn" id="pushCardLater" type="button" aria-label="나중에" title="나중에">' + icon("close") + '</button></span></div>');
   $("pushCardLater").onclick = () => {
     pushCardSave({ n: (st.n || 0) + 1, at: Date.now() });
     $("pushCard")?.remove();

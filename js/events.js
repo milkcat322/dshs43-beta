@@ -590,7 +590,7 @@ function myBlocks() {
       const s = tt[`${day}-${p}`];
       if (!s) continue;
       const last = blocks[dow][blocks[dow].length - 1];
-      if (last && last.subject === s && last.to === p - 1) last.to = p;
+      if (last && last.subject === s && last.to === p - 1 && !ttNoBlock(s)) last.to = p;   // 블록수업이 아닌 과목(js/timetable.js 의 ttNoBlock)은 합치지 않음
       else blocks[dow].push({ subject: s, from: p, to: p });
     }
   }

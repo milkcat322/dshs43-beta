@@ -95,6 +95,9 @@ const lastPeriod = (tt) => Math.max(7, ...Object.keys(tt).map((k) => +k.split("-
 const ALT_SUBJECTS = new Set(["화학", "기하와 벡터", "적분과 통계", "물리"]);
 const WEEKLY = "2000-01-01";
 const teachersOf = (s) => (TT_TEACHERS[s] || "").split(" · ").filter(Boolean);
+// 선생님이 세 분 이상인 과목(지구과학 · 생명과학 · 프로그래밍)은 교시가 이어져 있어도 블록수업이 아닙니다:
+// 교시마다 다른 선생님이 하는 따로따로의 수업이라, 시간표 · 배경화면 · 달력에서 한 칸으로 묶지 않습니다.
+const ttNoBlock = (s) => teachersOf(s).length >= 3;
 let ttPicks = new Map(), ttPicksAt = 0;   // "반|요일|교시|날짜" → 선생님
 async function loadTtPicks(force = false) {
   if (!sb) await sbWait;
@@ -199,8 +202,9 @@ async function openTtCell(ban, d, p, to = p) {   // to: 묶인 블록의 마지�
 const TT_DAY_CLASS = ["mon", "tue", "wed", "thu", "fri"];
 const colorIdx43 = (s) => SUBJECTS_43.findIndex(([x]) => x === s) % 13;
 // 그 요일 p 교시에서 시작해 같은 수업이 이어지는 마지막 교시. 블록수업 · R&E · 동아리처럼 이어지는 교시는 표에서 한 칸으로 묶습니다.
-// 쉬는 시간이 20분을 넘으면(점심을 사이에 둔 4 · 5교시) 이어진 것으로 보지 않습니다.
+// 쉬는 시간이 20분을 넘으면(점심을 사이에 둔 4 · 5교시) 이어진 것으로 보지 않습니다. 선생님이 세 분 이상인 과목(ttNoBlock)도 묶지 않습니다.
 function ttBlockEnd(tt, d, p, last) {
+  if (ttNoBlock(tt[`${d}-${p}`])) return p;
   const min = (t) => +t.slice(0, 2) * 60 + +t.slice(3);
   let to = p;
   while (to < last && tt[`${d}-${to + 1}`] === tt[`${d}-${p}`] && min(PERIOD_TIME[to + 1][0]) - min(PERIOD_TIME[to][1]) <= 20) to++;
