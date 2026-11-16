@@ -28,6 +28,15 @@ for (const d of ["css", "js"]) {
   }
 }
 
+// 0. css/ 파일: 중괄호 짝이 맞는지, 잘못 들어간 글자($1 같은 치환 찌꺼기)가 없는지 (브라우저는 이런 줄과 그 다음 규칙을 조용히 버립니다)
+for (const f of styles.filter((s) => s.startsWith("css/"))) {
+  const css = read(f).replace(/\/\*[\s\S]*?\*\//g, "");   // 주석은 빼고 봅니다
+  const open = css.split("{").length, close = css.split("}").length;
+  if (open !== close) errors.push(`${f} 의 중괄호 짝이 맞지 않습니다 ({ ${open - 1}개, } ${close - 1}개)`);
+  const junk = css.match(/\$\d|\$\{|<<<<<<<|>>>>>>>/);
+  if (junk) errors.push(`${f} 에 잘못 들어간 글자가 있습니다: ${junk[0]}`);
+}
+
 // 1. 문법
 const jsFiles = scripts.filter((s) => s.startsWith("js/"));
 for (const f of jsFiles) {

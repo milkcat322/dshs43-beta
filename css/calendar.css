@@ -56,7 +56,10 @@
   cursor: pointer;
 }
 
-$1
+.seg-btn.on {
+  background: var(--card);
+  color: var(--text);
+}
 
 /* 고른 버튼 뒤의 바탕(.seg-ink)이 고른 버튼으로 미끄러져 갑니다 (js/shell.js 의 moveInk · inkSegs).
    바탕이 생긴 묶음(.inked)에서는 버튼 자체의 바탕색을 빼고, 글자가 바탕 위에 오게 합니다. */
