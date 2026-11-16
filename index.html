@@ -52,17 +52,17 @@
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="modulepreload" href="https://esm.sh/@supabase/supabase-js@2.45.4?bundle">
   <link rel="modulepreload" href="https://esm.sh/@supabase/supabase-js@2.45.4/es2022/supabase-js.bundle.mjs">
-  <!-- 글꼴: 본문은 Pretendard (jsdelivr, 버전 고정 · 쓰는 글자 조각만 받음), 숫자 · 코드 모양 글자는 IBM Plex Mono (Google Fonts). 화면을 먼저 그리고 나중에 입힙니다. -->
+  <!-- 글꼴: 본문은 Pretendard (jsdelivr, 버전 고정 · 쓰는 글자 조각만 받음), 숫자 · 날짜 · 작은 제목은 Inter (Google Fonts. css/base.css 의 --font-num). 화면을 먼저 그리고 나중에 입힙니다. -->
   <link
     href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
     rel="stylesheet" media="print" onload="this.media='all'">
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&display=swap" rel="stylesheet"
     media="print" onload="this.media='all'">
   <noscript>
     <link
       href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
       rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&display=swap" rel="stylesheet">
   </noscript>
   <!-- 스타일 (css/). 아래 순서대로 읽습니다: 같은 선택자는 뒤 파일이 앞 파일을 덮어씁니다. 파일을 더하면 sw.js 의 SHELL 에도 넣습니다. -->
   <link rel="stylesheet" href="css/base.css">
@@ -197,9 +197,9 @@
   </script>
   <div class="container">
     <div class="header">
-      <div class="school-badge">대전과학고등학교 · 2026학년도</div>
-      <h1>dshs43.app</h1>
-      <p class="subtitle">대전과학고 43기 · 수행평가와 일정을 한곳에서</p>
+      <!-- <div class="school-badge">대전과학고등학교 · 2026학년도</div> -->
+      <h1 font-weight="500">dshs43.app</h1>
+      <!-- <p class="subtitle">대전과학고 43기 · 수행평가와 일정을 한곳에서</p> -->
     </div>
     <!-- 탭과 그 위의 아이콘 버튼은 함께 움직여, 폰에서 스크롤해도 위에 붙어 있습니다 -->
     <div class="nav-bar">

@@ -97,7 +97,7 @@
 }
 
 .suggestion-id {
-   font-family: 'IBM Plex Mono', monospace;
+   font-family: var(--font-num);
    font-size: 12px;
    color: var(--text-muted);
 }
@@ -178,7 +178,7 @@
 .student-info .student-meta {
    color: var(--text-dim);
    font-size: 13px;
-   font-family: 'IBM Plex Mono', monospace;
+   font-family: var(--font-num);
    margin-top: 4px;
 }
 
@@ -269,7 +269,7 @@ table.timetable {
    font-weight: 700;
    letter-spacing: 0.08em;
    text-transform: uppercase;
-   font-family: 'IBM Plex Mono', monospace;
+   font-family: var(--font-num);
    color: var(--text-dim);
    border-bottom: 1px solid var(--border);
    white-space: nowrap;
@@ -316,7 +316,7 @@ table.timetable {
    min-width: 44px;
    font-size: 11px;
    color: var(--text-muted);
-   font-family: 'IBM Plex Mono', monospace;
+   font-family: var(--font-num);
    border-right: 1px solid var(--border);
    background: var(--surface);
 }
@@ -368,7 +368,7 @@ table.timetable {
 .class-cell .ban-name {
    font-size: calc((var(--tt-font) - 2px) * var(--tt-scale));   /* 과목 이름 아래 작은 글씨 (전체) */
    opacity: 0.8;
-   font-family: 'IBM Plex Mono', monospace;
+   font-family: var(--font-num);
    margin-top: 1px;
 }
 
@@ -499,7 +499,7 @@ table.timetable {
    font-size: 10px;
    font-weight: 700;
    letter-spacing: 0.12em;
-   font-family: 'IBM Plex Mono', monospace;
+   font-family: var(--font-num);
    margin-bottom: 6px;
 }
 
@@ -576,7 +576,7 @@ table.timetable {
 }
 
 .cmp-stat-num {
-   font-family: 'IBM Plex Mono', monospace;
+   font-family: var(--font-num);
    font-size: 22px;
    font-weight: 700;
    line-height: 1;
@@ -605,7 +605,7 @@ table.timetable {
 }
 
 .cmp-tag small {
-   font-family: 'IBM Plex Mono', monospace;
+   font-family: var(--font-num);
    opacity: 0.75;
    margin-left: 3px;
 }
@@ -659,7 +659,7 @@ table.timetable {
 .cmp-row .cmp-ban {
    font-size: 8.5px;
    opacity: 0.75;
-   font-family: 'IBM Plex Mono', monospace;
+   font-family: var(--font-num);
    margin-top: 1px;
 }
 
@@ -695,7 +695,7 @@ table.timetable {
 .cmp-badge {
    font-size: 8px;
    letter-spacing: 0.06em;
-   font-family: 'IBM Plex Mono', monospace;
+   font-family: var(--font-num);
    opacity: 0.9;
 }
 
@@ -729,7 +729,7 @@ table.timetable {
    font-weight: 700;
    letter-spacing: 0.12em;
    color: var(--text-dim);
-   font-family: 'IBM Plex Mono', monospace;
+   font-family: var(--font-num);
    margin-bottom: 8px;
    text-transform: uppercase;
 }
@@ -796,7 +796,7 @@ table.timetable {
 }
 
 .wp-size-note {
-   font-family: 'IBM Plex Mono', monospace;
+   font-family: var(--font-num);
    font-size: 11px;
    color: var(--text-muted);
 }
@@ -900,7 +900,7 @@ table.timetable {
    font-size: 8.5px;
    font-weight: 500;
    opacity: 0.8;
-   font-family: 'IBM Plex Mono', monospace;
+   font-family: var(--font-num);
 }
 
 .t-room {
@@ -930,7 +930,7 @@ table.timetable {
 }
 
 .t-card-bans {
-   font-family: 'IBM Plex Mono', monospace;
+   font-family: var(--font-num);
    font-size: 11px;
    color: var(--text-dim);
    margin-left: auto;

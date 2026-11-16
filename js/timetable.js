@@ -11,24 +11,36 @@
 // (6반은 받은 시간표대로 월요일 7교시 '나와 우리', 8 · 9교시 '자생탐'까지 넣었습니다)
 const TT_CLUB = ",동아리,동아리";
 const TIMETABLE_43 = {
-  1: { 월: "생명과학,생명과학,적분과 통계,체육,물리,물리,자율", 화: "프로그래밍,물리,화학,화학,지구과학,한국사,국어" + TT_CLUB,
-       수: "진로,기하와 벡터,적분과 통계,적분과 통계,지구과학,국어,영어회화", 목: "국어,영어회화,프로그래밍,한국사,R&E,R&E,R&E",
-       금: "프로그래밍,영어회화,지구과학,생명과학,기하와 벡터,기하와 벡터,화학" },
-  2: { 월: "국어,진로,지구과학,적분과 통계,기하와 벡터,기하와 벡터,자율", 화: "생명과학,생명과학,물리,기하와 벡터,국어,지구과학,체육" + TT_CLUB,
-       수: "지구과학,화학,프로그래밍,한국사,영어회화,물리,물리", 목: "프로그래밍,적분과 통계,적분과 통계,국어,R&E,R&E,R&E",
-       금: "영어회화,생명과학,화학,화학,한국사,영어회화,프로그래밍" },
-  3: { 월: "한국사,프로그래밍,국어,지구과학,화학,화학,자율", 화: "영어회화,기하와 벡터,한국사,지구과학,국어,적분과 통계,적분과 통계" + TT_CLUB,
-       수: "적분과 통계,영어회화,화학,물리,체육,기하와 벡터,기하와 벡터", 목: "프로그래밍,국어,생명과학,진로,R&E,R&E,R&E",
-       금: "물리,물리,영어회화,프로그래밍,지구과학,생명과학,생명과학" },
-  4: { 월: "물리,물리,프로그래밍,국어,적분과 통계,적분과 통계,자율", 화: "화학,화학,국어,지구과학,프로그래밍,기하와 벡터,진로" + TT_CLUB,
-       수: "영어회화,생명과학,기하와 벡터,기하와 벡터,지구과학,화학,한국사", 목: "적분과 통계,생명과학,생명과학,영어회화,R&E,R&E,R&E",
-       금: "한국사,프로그래밍,체육,물리,지구과학,영어회화,국어" },
-  5: { 월: "진로,한국사,기하와 벡터,기하와 벡터,생명과학,생명과학,자율", 화: "국어,영어회화,국어,프로그래밍,물리,물리,기하와 벡터" + TT_CLUB,
-       수: "국어,물리,영어회화,지구과학,적분과 통계,체육,생명과학", 목: "지구과학,화학,화학,프로그래밍,R&E,R&E,R&E",
-       금: "프로그래밍,한국사,적분과 통계,적분과 통계,영어회화,화학,지구과학" },
-  6: { 월: "생명과학,영어회화,화학,화학,지구과학,프로그래밍,나와 우리,자생탐,자생탐", 화: "물리,체육,적분과 통계,적분과 통계,진로,국어,한국사" + TT_CLUB,
-       수: "한국사,생명과학,생명과학,프로그래밍,화학,영어회화,지구과학", 목: "영어회화,기하와 벡터,지구과학,국어,R&E,R&E,R&E",
-       금: "프로그래밍,기하와 벡터,기하와 벡터,국어,적분과 통계,물리,물리" },
+  1: {
+    월: "생명과학,생명과학,적분과 통계,체육,물리,물리,자율", 화: "프로그래밍,물리,화학,화학,지구과학,한국사,국어" + TT_CLUB,
+    수: "진로,기하와 벡터,적분과 통계,적분과 통계,지구과학,국어,영어회화", 목: "국어,영어회화,프로그래밍,한국사,R&E,R&E,R&E",
+    금: "프로그래밍,영어회화,지구과학,생명과학,기하와 벡터,기하와 벡터,화학"
+  },
+  2: {
+    월: "국어,진로,지구과학,적분과 통계,기하와 벡터,기하와 벡터,자율", 화: "생명과학,생명과학,물리,기하와 벡터,국어,지구과학,체육" + TT_CLUB,
+    수: "지구과학,화학,프로그래밍,한국사,영어회화,물리,물리", 목: "프로그래밍,적분과 통계,적분과 통계,국어,R&E,R&E,R&E",
+    금: "영어회화,생명과학,화학,화학,한국사,영어회화,프로그래밍"
+  },
+  3: {
+    월: "한국사,프로그래밍,국어,지구과학,화학,화학,자율", 화: "영어회화,기하와 벡터,한국사,지구과학,국어,적분과 통계,적분과 통계" + TT_CLUB,
+    수: "적분과 통계,영어회화,화학,물리,체육,기하와 벡터,기하와 벡터", 목: "프로그래밍,국어,생명과학,진로,R&E,R&E,R&E",
+    금: "물리,물리,영어회화,프로그래밍,지구과학,생명과학,생명과학"
+  },
+  4: {
+    월: "물리,물리,프로그래밍,국어,적분과 통계,적분과 통계,자율", 화: "화학,화학,국어,지구과학,프로그래밍,기하와 벡터,진로" + TT_CLUB,
+    수: "영어회화,생명과학,기하와 벡터,기하와 벡터,지구과학,화학,한국사", 목: "적분과 통계,생명과학,생명과학,영어회화,R&E,R&E,R&E",
+    금: "한국사,프로그래밍,체육,물리,지구과학,영어회화,국어"
+  },
+  5: {
+    월: "진로,한국사,기하와 벡터,기하와 벡터,생명과학,생명과학,자율", 화: "국어,영어회화,국어,프로그래밍,물리,물리,기하와 벡터" + TT_CLUB,
+    수: "국어,물리,영어회화,지구과학,적분과 통계,체육,생명과학", 목: "지구과학,화학,화학,프로그래밍,R&E,R&E,R&E",
+    금: "프로그래밍,한국사,적분과 통계,적분과 통계,영어회화,화학,지구과학"
+  },
+  6: {
+    월: "생명과학,영어회화,화학,화학,지구과학,프로그래밍,나와 우리,자생탐,자생탐", 화: "물리,체육,적분과 통계,적분과 통계,진로,국어,한국사" + TT_CLUB,
+    수: "한국사,생명과학,생명과학,프로그래밍,화학,영어회화,지구과학", 목: "영어회화,기하와 벡터,지구과학,국어,R&E,R&E,R&E",
+    금: "프로그래밍,기하와 벡터,기하와 벡터,국어,적분과 통계,물리,물리"
+  },
 };
 const TT_TEACHERS = {
   국어: "김도현 · 정선혜", 영어회화: "한신실 · Nthabiseng", 지구과학: "최원문 · 김진욱 · 김우겸", 화학: "이충섭 · 김정은",
@@ -352,7 +364,7 @@ function renderTimetable() {
     </div>
     <div class="tabs">
       ${[["tt", icon("calendar_view_week") + " 시간표"], ["gpa", icon("school") + " 학점 계산"], ["wp", icon("wallpaper") + " 배경화면"]].map(([k, l]) =>
-        `<button class="tab-btn${ttTab === k ? " active" : ""}" data-ttab="${k}">${l}</button>`).join("")}
+    `<button class="tab-btn${ttTab === k ? " active" : ""}" data-ttab="${k}">${l}</button>`).join("")}
     </div>
     <div class="tab-panel${ttTab === "tt" ? " active" : ""}" id="panel-tt">${ttGridHtml()}</div>
     <div class="tab-panel${ttTab === "gpa" ? " active" : ""}" id="panel-gpa"></div>
@@ -383,7 +395,7 @@ function bindTtCells() {
   // 글자 크기 버튼: 다시 그리지 않고 html 의 data-tt-font 만 바꿉니다
   $("studyView").querySelectorAll("[data-ttfont]").forEach((b) => b.onclick = () => {
     ttFont = b.dataset.ttfont;
-    try { localStorage.setItem(TT_FONT_KEY, ttFont); } catch {}
+    try { localStorage.setItem(TT_FONT_KEY, ttFont); } catch { }
     document.documentElement.dataset.ttFont = ttFont;
     $("studyView").querySelectorAll("[data-ttfont]").forEach((x) => {
       x.classList.toggle("on", x === b);
@@ -402,10 +414,10 @@ function gpaLoad() {
   try {
     const raw = localStorage.getItem(gpaKey());
     if (raw != null) return JSON.parse(raw) || {};
-  } catch {}
+  } catch { }
   return Object.fromEntries(GPA_SUBJECTS.map(([s]) => [s, "A+"]));
 }
-function gpaSave(st) { try { localStorage.setItem(gpaKey(), JSON.stringify(st)); } catch {} }
+function gpaSave(st) { try { localStorage.setItem(gpaKey(), JSON.stringify(st)); } catch { } }
 // P/F 과목: 전원 Pass 라 A+(4.3)로 넣어 계산하고, 학점 계산 칸에는 보이지 않습니다
 const PF_43 = new Set(["진로"]);
 // 학점 계산에 넣지 않는 과목
@@ -425,7 +437,7 @@ function renderGpa() {
     <div class="gpa-hero">
       <div><div class="gpa-big">${cred ? (pts / cred).toFixed(2) : "–"}</div><div class="gpa-max">/ 4.30</div></div>
       <div class="gpa-hero-tx"><b>평균 학점</b><br>입력한 ${cred}학점 기준 · 전체 ${GPA_CREDITS}학점<br>${cred < GPA_CREDITS
-        ? `<span style="color:var(--text-muted)">아직 ${GPA_CREDITS - cred}학점이 미입력이에요</span>` : '<span style="color:var(--accent3)">모든 과목 입력 완료</span>'}</div>
+      ? `<span style="color:var(--text-muted)">아직 ${GPA_CREDITS - cred}학점이 미입력이에요</span>` : '<span style="color:var(--accent3)">모든 과목 입력 완료</span>'}</div>
     </div>
     ${graded.map(([s, c]) => `<div class="gpa-row">
       <div class="gpa-head"><span class="gpa-name">${esc(subjName(s))}</span><span class="gpa-cred">${c}학점</span></div>

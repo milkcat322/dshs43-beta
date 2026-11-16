@@ -100,7 +100,7 @@
 .fr-item { display: flex; align-items: center; gap: 8px; width: 100%; background: none; border: none; border-bottom: 1px solid var(--border); padding: 10px 13px; font-family: 'Pretendard Variable', 'Pretendard', sans-serif; color: var(--text); font-size: 13.5px; cursor: pointer; text-align: left; }
 .fr-item:last-child { border-bottom: none; }
 .fr-item:hover { background: var(--card); }
-.fr-item span { margin-left: auto; font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text-muted); }
+.fr-item span { margin-left: auto; font-family: var(--font-num); font-size: 12px; color: var(--text-muted); }
 .fr-empty { padding: 10px 13px; font-size: 12.5px; color: var(--text-muted); }
 .fr-note { text-align: left; margin-top: 8px; }
 .shared-card { border-left: 3px solid var(--c); }
@@ -110,7 +110,7 @@
 .subj-box:hover { border-color: var(--text-muted); }
 .subj-box.on { border-color: var(--accent1); }
 .subj-name { font-size: 13.5px; font-weight: 700; line-height: 1.35; }
-.subj-ban { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-dim); }
+.subj-ban { font-family: var(--font-num); font-size: 11px; color: var(--text-dim); }
 .subj-meta { margin-top: auto; padding-top: 6px; display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-muted); }
 .subj-hint { margin-top: 12px; text-align: center; font-size: 12.5px; color: var(--text-muted); padding: 14px; }
 .subj-detail { margin-top: 16px; animation: fadeUp 0.25s ease; }
@@ -128,7 +128,7 @@
 .todo-add #tdTitle::placeholder { color: var(--text-muted); }
 .field-btn:disabled { opacity: 0.4; cursor: default; }
 /* 할 일 기한 칩 + 고르기 메뉴 */
-.td-due { flex-shrink: 0; font-family: 'IBM Plex Mono', 'Pretendard Variable', 'Pretendard', monospace; font-size: 11px; font-weight: 600; border: 1px solid transparent; border-radius: 999px; padding: 4px 10px; cursor: pointer; background: rgba(255,255,255,0.05); color: var(--text-dim); transition: background 0.15s, opacity 0.15s, border-color 0.15s; }
+.td-due { flex-shrink: 0; font-family: var(--font-num); font-size: 11px; font-weight: 600; border: 1px solid transparent; border-radius: 999px; padding: 4px 10px; cursor: pointer; background: rgba(255,255,255,0.05); color: var(--text-dim); transition: background 0.15s, opacity 0.15s, border-color 0.15s; }
 .td-due:hover { border-color: var(--border); }
 .td-due.ok { color: var(--text); }
 .td-due.soon { color: #fb923c; }
@@ -139,7 +139,7 @@
 .due-pick { display: flex; align-items: center; justify-content: space-between; gap: 14px; width: 100%; background: none; border: none; border-radius: 9px; padding: 9px 11px; font-family: 'Pretendard Variable', 'Pretendard', sans-serif; font-size: 13px; color: var(--text); cursor: pointer; text-align: left; }
 .due-pick:hover { background: rgba(255,255,255,0.06); }
 .due-pick.on { color: var(--accent3); }
-.due-pick-day { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-muted); }
+.due-pick-day { font-family: var(--font-num); font-size: 11px; color: var(--text-muted); }
 .due-cal { position: relative; border-top: 1px solid var(--border); border-radius: 0 0 9px 9px; margin-top: 4px; padding-top: 11px; }
 .due-cal input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
 .due-clear { color: #fca5a5; }
@@ -167,7 +167,7 @@
 .td-gchev { display: inline-block; font-size: 11px; color: var(--text-muted); transition: transform 0.15s; }
 .td-group.shut .td-gchev { transform: rotate(-90deg); }
 .td-gname { font-size: 14px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.td-gcount { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-muted); }
+.td-gcount { font-family: var(--font-num); font-size: 11px; color: var(--text-muted); }
 .td-gedit { flex-shrink: 0; background: none; border: none; color: var(--text-muted); font-size: 16px; cursor: pointer; padding: 2px 8px; border-radius: 6px; }
 .td-gedit:hover { color: var(--text); background: rgba(255,255,255,0.06); }
 .td-group.shut .td-gbody { display: none; }
@@ -240,21 +240,21 @@
 .class-card:hover { border-color: var(--accent1); transform: translateY(-2px); }
 .class-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
 .class-card-name { font-size: 13px; font-weight: 500; flex: 1; }
-.class-card-ban { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text-dim); background: var(--card); padding: 2px 8px; border-radius: 0; }
+.class-card-ban { font-family: var(--font-num); font-size: 12px; color: var(--text-dim); background: var(--card); padding: 2px 8px; border-radius: 0; }
 .overlap-list { display: flex; flex-direction: column; gap: 8px; }
 .overlap-item { background: var(--surface); border: 1px solid var(--border); border-radius: 0; padding: 12px 16px; transition: border-color 0.2s; cursor: pointer; }
 .overlap-item:hover { border-color: var(--accent1); }
 .overlap-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
 .overlap-name { font-weight: 600; font-size: 0.95rem; }
-.overlap-id { font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; color: var(--text-dim); }
+.overlap-id { font-family: var(--font-num); font-size: 0.75rem; color: var(--text-dim); }
 .overlap-count { margin-left: auto; font-size: 0.8rem; color: var(--accent1); font-weight: 600; background: rgba(124,111,224,0.12); padding: 2px 10px; border-radius: 0; }
 .overlap-subjects { display: flex; flex-wrap: wrap; gap: 5px; }
 .overlap-tag { font-size: 0.75rem; background: var(--card); border: 1px solid var(--border); border-radius: 0; padding: 2px 8px; color: var(--text-dim); }
-.overlap-tag small { font-family: 'IBM Plex Mono', monospace; color: var(--text-muted); font-size: 0.7rem; margin-left: 2px; }
+.overlap-tag small { font-family: var(--font-num); color: var(--text-muted); font-size: 0.7rem; margin-left: 2px; }
 .class-detail-popup { position: fixed; z-index: 1000; width: 280px; background: var(--surface); border: 1px solid var(--accent1); border-radius: 0; box-shadow: 0 8px 32px rgba(0,0,0,0.5); padding: 14px 16px; animation: fadeIn 0.15s ease; }
 .cdp-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
 .cdp-subject { font-weight: 700; font-size: 0.95rem; }
-.cdp-ban { font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; color: var(--accent1); margin-top: 2px; }
+.cdp-ban { font-family: var(--font-num); font-size: 0.75rem; color: var(--accent1); margin-top: 2px; }
 .cdp-close { background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 0.85rem; padding: 2px 4px; border-radius: 4px; }
 .cdp-close:hover { color: var(--text); }
 .cdp-info-row { display: flex; align-items: center; gap: 7px; font-size: 0.82rem; color: var(--text-dim); margin-bottom: 5px; }
@@ -264,9 +264,9 @@
 .cdp-student { display: flex; align-items: center; gap: 8px; padding: 4px 8px; border-radius: 0; cursor: pointer; transition: background 0.15s; }
 .cdp-student:hover { background: var(--card); }
 .cdp-sname { font-size: 0.85rem; font-weight: 500; }
-.cdp-sid { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; color: var(--text-dim); margin-left: auto; }
+.cdp-sid { font-family: var(--font-num); font-size: 0.72rem; color: var(--text-dim); margin-left: auto; }
 .legend { margin-top: 20px; padding: 16px 20px; background: var(--surface); border-radius: 0; border: 1px solid var(--border); }
-.legend-title { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: var(--text-muted); text-transform: uppercase; font-family: 'IBM Plex Mono', monospace; margin-bottom: 10px; }
+.legend-title { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: var(--text-muted); text-transform: uppercase; font-family: var(--font-num); margin-bottom: 10px; }
 .legend-items { display: flex; flex-wrap: wrap; gap: 8px; }
 .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-dim); }
 .legend-dot { width: 8px; height: 8px; border-radius: 0; flex-shrink: 0; }
@@ -275,9 +275,10 @@
 .free-cell:hover { border-color: var(--accent3); background: rgba(111,224,196,0.06); }
 .free-label { font-size: 0.62rem; color: var(--text-muted); opacity: 0.45; }
 .free-cell:hover .free-label { color: var(--accent3); opacity: 1; }
-.stats-row { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
-.stat-chip { background: var(--surface); border: 1px solid var(--border); border-radius: 0; padding: 8px 16px; font-size: 13px; display: flex; align-items: center; gap: 8px; }
-.stat-num { font-family: 'IBM Plex Mono', monospace; font-weight: 700; color: var(--accent1); }
+/* 프로필 아래 숫자 세 개(수강 과목 · 이수 학점 · 주간 수업 교시): 박스 없이 글자만 */
+.stats-row { display: flex; gap: 22px; margin-bottom: 24px; flex-wrap: wrap; }
+.stat-chip { padding: 4px 0; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+.stat-num { font-family: var(--font-num); font-weight: 700; color: var(--accent1); }
 .stat-label { color: var(--text-dim); }
 .welcome-state { text-align: center; padding: 40px 20px; color: var(--text-muted); }
 .welcome-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.6; }

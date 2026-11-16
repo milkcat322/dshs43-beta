@@ -3,19 +3,23 @@
 // 모듈이 아니라 전역 스코프를 함께 쓰는 스크립트입니다 (index.html 에 적힌 순서대로 읽음. 설명은 js/core.js 맨 위).
 
 // ---------- 밑줄 탭 ----------
-// 고른 탭 아래의 밑줄(.tab-ink). 탭을 바꾸면 밑줄이 그 탭으로 미끄러져 갑니다 (움직임은 index.html 의 .tab-ink transition).
+// 고른 탭 아래의 밑줄(.tab-ink). 탭을 바꾸면 밑줄이 그 탭으로 미끄러져 갑니다 (움직임은 css 의 .tab-ink transition).
+// 선택 버튼 묶음(.seg)에서는 밑줄 대신 고른 버튼 뒤의 바탕(.seg-ink)이 같은 방식으로 움직입니다.
 // 탭 묶음을 통째로 다시 그려도(innerHTML) 직전 자리에서 출발하도록, 묶음 이름(key)마다 마지막 자리를 기억합니다.
 const inkAt = {};
 function moveInk(box, sel, key) {
   if (!box) return;
   box.dataset.ink = `${key}|${sel}`;
   const on = box.querySelector(sel);
-  let ink = box.querySelector(":scope > .tab-ink");
+  const pill = box.classList.contains("seg");   // 선택 버튼 묶음: 밑줄이 아니라 버튼 크기의 바탕
+  let ink = box.querySelector(":scope > .tab-ink, :scope > .seg-ink");
   const fresh = !ink;
-  if (fresh) { ink = document.createElement("span"); ink.className = "tab-ink"; box.append(ink); }
+  if (fresh) { ink = document.createElement("span"); ink.className = pill ? "seg-ink" : "tab-ink"; box.append(ink); }
+  if (pill) box.classList.add("inked");   // 바탕이 생겼으니 고른 버튼 자체의 바탕색은 뺍니다 (css)
   if (!on || !on.offsetWidth) { ink.style.opacity = "0"; return; }   // 고른 탭이 없거나 화면에 안 보임
-  const put = (p) => { ink.style.width = `${p.w}px`; ink.style.transform = `translate(${p.x}px, ${p.y}px)`; };
-  const to = { x: on.offsetLeft, y: on.offsetTop + on.offsetHeight - 1, w: on.offsetWidth };
+  const put = (p) => { ink.style.width = `${p.w}px`; if (p.h) ink.style.height = `${p.h}px`; ink.style.transform = `translate(${p.x}px, ${p.y}px)`; };
+  const to = pill ? { x: on.offsetLeft, y: on.offsetTop, w: on.offsetWidth, h: on.offsetHeight }
+    : { x: on.offsetLeft, y: on.offsetTop + on.offsetHeight - 1, w: on.offsetWidth };
   if (fresh || ink.style.opacity === "0") {   // 새로 만든 밑줄: 직전 자리(없으면 도착 자리)에 먼저 놓고 나서 움직입니다
     ink.style.transition = "none";
     put(inkAt[key] || to);
@@ -31,12 +35,26 @@ function refitInks() {
   document.querySelectorAll("[data-ink]").forEach((box) => {
     const [key, sel] = box.dataset.ink.split("|");
     delete inkAt[key];
-    box.querySelector(":scope > .tab-ink")?.remove();
+    box.querySelector(":scope > .tab-ink, :scope > .seg-ink")?.remove();
     moveInk(box, sel, key);
   });
 }
 addEventListener("resize", refitInks);
 document.fonts?.addEventListener?.("loadingdone", refitInks);
+
+// 선택 버튼 묶음(.seg — 달력 보기 전환 · 시간표 글자 크기 · 수행평가 정렬 · 공지 범위)은 어디서 그리든 자동으로 맞춥니다:
+// 화면이 바뀔 때마다(MutationObserver) 화면에 있는 .seg 를 찾아, 고른 버튼(.seg-btn.on) 뒤로 바탕을 옮깁니다.
+// 묶음 이름은 id, 없으면 버튼의 data-* 이름(seg · ttfont · asort …)이라 다시 그려도 직전 자리에서 출발합니다.
+let segTick = 0;
+function inkSegs() {
+  segTick = 0;
+  document.querySelectorAll(".seg").forEach((box) => {
+    const b = box.querySelector(".seg-btn");
+    if (b) moveInk(box, ".seg-btn.on", `seg:${box.id || Object.keys(b.dataset)[0] || "x"}`);
+  });
+}
+new MutationObserver(() => { if (!segTick) segTick = requestAnimationFrame(inkSegs); })
+  .observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ["class"] });
 
 // ---------- 헤더 ----------
 function renderNav() {

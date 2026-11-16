@@ -52,7 +52,7 @@
 .asg-row-main .due-badge { flex-shrink: 0; min-width: 44px; text-align: center; }
 .ar-subj { flex-shrink: 0; max-width: 26%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; font-weight: 700; color: var(--accent1); }
 .ar-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
-.ar-when { flex-shrink: 0; font-size: 11px; color: var(--text-muted); white-space: nowrap; font-family: 'IBM Plex Mono', 'Pretendard Variable', 'Pretendard', monospace; }
+.ar-when { flex-shrink: 0; font-size: 11px; color: var(--text-muted); white-space: nowrap; font-family: var(--font-num); }
 .ar-group { padding: 7px 12px 5px; font-size: 12px; font-weight: 800; color: var(--accent1); background: var(--card); border-bottom: 1px solid var(--border); }
 .ar-group small { font-weight: 400; color: var(--text-muted); margin-left: 3px; }
 /* 학교 일정 대상: 즐겨찾기 그룹 */
@@ -155,7 +155,7 @@
 .upd-sheet { max-width: 420px; }
 .upd-entry { padding: 14px 0; border-top: 1px solid var(--border); }
 .study-sheet-head + .upd-entry { border-top: none; padding-top: 0; }
-.upd-date { display: flex; align-items: center; gap: 6px; font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: var(--text-muted); }
+.upd-date { display: flex; align-items: center; gap: 6px; font-family: var(--font-num); font-size: 11.5px; color: var(--text-muted); }
 .upd-tag { font-family: 'Pretendard Variable', 'Pretendard', sans-serif; font-size: 10.5px; font-weight: 700; color: var(--accent3); background: rgba(111,224,196,0.12); border-radius: 0; padding: 1px 6px; }
 .upd-title { font-size: 15px; font-weight: 800; line-height: 1.45; margin: 4px 0 6px; }
 .upd-items { padding-left: 18px; font-size: 13px; color: var(--text-dim); line-height: 1.7; }

@@ -4,6 +4,8 @@
    같은 선택자는 뒤 파일이 앞 파일을 덮어쓰므로 순서를 바꾸지 않습니다. */
 /* 모서리: 카드 · 표 · 입력칸 · 창은 모두 각지게(border-radius: 0). 버튼 · 체크 · 작은 점만 둥글게 둡니다. */
 :root {
+  /* 숫자 · 날짜 · 작은 제목에 쓰는 글꼴. 한글은 Inter 에 없어서 Pretendard 로 넘어갑니다. 바꾸려면 이 한 줄만 고칩니다 */
+  --font-num: 'Inter', 'Pretendard Variable', 'Pretendard', sans-serif;
   --bg: #0a0a0f;
   --surface: #12121a;
   --card: #1a1a26;
@@ -24,7 +26,7 @@ body { background: var(--bg); color: var(--text); font-family: 'Pretendard Varia
 body::before { content: ''; position: fixed; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(ellipse at 30% 20%, rgba(124,111,224,0.08) 0%, transparent 50%), radial-gradient(ellipse at 70% 80%, rgba(224,111,158,0.06) 0%, transparent 50%); pointer-events: none; z-index: 0; }
 .container { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 40px 20px; }
 .header { text-align: center; margin-bottom: 48px; }
-.school-badge { display: inline-flex; align-items: center; gap: 8px; background: var(--card); border: 1px solid var(--border); border-radius: 0; padding: 6px 16px; margin-bottom: 20px; font-size: 12px; color: var(--text-dim); letter-spacing: 0.1em; font-family: 'IBM Plex Mono', monospace; }
+.school-badge { display: inline-flex; align-items: center; gap: 8px; background: var(--card); border: 1px solid var(--border); border-radius: 0; padding: 6px 16px; margin-bottom: 20px; font-size: 12px; color: var(--text-dim); letter-spacing: 0.1em; font-family: var(--font-num); }
 .school-badge::before { content: '◆'; color: var(--accent1); font-size: 8px; }
 h1 { font-size: clamp(28px, 5vw, 48px); font-weight: 900; letter-spacing: -0.02em; background: linear-gradient(135deg, var(--text) 0%, var(--accent1) 50%, var(--accent2) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 8px; }
 .subtitle { color: var(--text-dim); font-size: 14px; font-weight: 300; }

@@ -110,11 +110,11 @@ function renderStudy() {
       </div>
     </div>
     ${page === "cal" ? `<div class="study-row">
-      <button class="study-btn primary" id="btnEv">+ 일정 추가</button>
+      <button class="add-btn" id="btnEv" type="button" aria-label="일정 추가" title="일정 추가">${icon("add")}<span class="add-label">일정 추가</span></button>
     </div>
     <div id="dshsHint"></div>` : ""}
     ${page === "notice" ? `<div class="study-row">
-      <button class="study-btn primary" id="btnNew">+ 수행평가 추가</button>
+      <button class="add-btn" id="btnNew" type="button" aria-label="수행평가 추가" title="수행평가 추가">${icon("add")}<span class="add-label">수행평가 추가</span></button>
     </div>` : ""}
     <div id="studyBody"><div class="study-empty">불러오는 중…</div></div>`;
   if ($("btnEv")) $("btnEv").onclick = () => openEventForm(null);
