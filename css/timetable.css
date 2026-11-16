@@ -348,11 +348,13 @@ table.timetable {
    background: color-mix(in srgb, #aab2bd var(--tt-alpha), transparent);
 }
 
-/* 과목 칸의 색은 칸 테두리에서 살짝 띄워 칠합니다: td 의 padding 만큼 틈이 생깁니다.
-   색을 칸(td)에 칠하므로, 이어지는 교시를 묶은 칸(rowspan)도 높이만큼 꽉 찹니다. */
+/* 과목 칸의 색은 칸(td) 전체에 칠하고, 표 바탕색(--card)의 안쪽 그림자로 칸 사이 얇은 틈을 만듭니다.
+   색을 칸(td)에 칠하므로, 이어지는 교시를 묶은 칸(rowspan)도 높이만큼 꽉 찹니다.
+   background-clip: content-box 로 틈을 만들면 안 됩니다 — Safari(아이폰 · 아이패드)는 세로 정렬을 보이지 않는
+   안쪽 여백으로 처리해서, 묶은 칸의 아래 교시가 색 없이 빈칸으로 보입니다. */
 .timetable td[class*="color-"],
 .timetable td.common-cell {
-   background-clip: content-box;
+   box-shadow: inset 1px 0 0 var(--card);
    vertical-align: top;   /* 글자는 칸 맨 위에서 시작 (묶인 칸에서도) */
 }
 

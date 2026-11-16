@@ -70,6 +70,7 @@
   .timetable:not(.cmp-table) th:first-child { width: 22px; }
   .timetable:not(.cmp-table) th.day-header { font-size: 12px; }
   .timetable:not(.cmp-table) td { min-width: 0; padding: 1px; height: 46px; }
+  .timetable:not(.cmp-table) td[class*="color-"], .timetable:not(.cmp-table) td.common-cell { box-shadow: inset 0 0 0 1px var(--card); }   /* 폰은 네 변 모두 1px 틈 */
   .timetable:not(.cmp-table) td.period-col { width: 22px; min-width: 0; font-size: 10px; }
   .timetable:not(.cmp-table) .class-cell { padding: 3px 3px; border-radius: 0; min-height: 44px; overflow: hidden; word-break: keep-all; overflow-wrap: anywhere; }
   :root { --tt-font: 11px; }   /* 폰에서의 시간표 과목 글씨 크기 (칸이 좁아 더 키우면 5글자 과목이 두 줄이 됩니다) */
