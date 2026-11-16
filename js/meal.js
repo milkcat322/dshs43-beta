@@ -69,9 +69,9 @@ async function renderMeal(key) {
       </div>
     </div>
     <div class="meal-nav">
-      <button class="study-btn" id="mealPrev" aria-label="전날">${icon("chevron_left")}</button>
+      <button class="cal-nav" id="mealPrev" type="button" aria-label="전날" title="전날">${icon("chevron_left")}</button>
       <button class="meal-day" id="mealToday" title="오늘로">${d.getMonth() + 1}월 ${d.getDate()}일 (${"일월화수목금토"[d.getDay()]})${rel ? ` <span class="meal-rel">${rel}</span>` : ""}</button>
-      <button class="study-btn" id="mealNext" aria-label="다음 날">${icon("chevron_right")}</button>
+      <button class="cal-nav" id="mealNext" type="button" aria-label="다음 날" title="다음 날">${icon("chevron_right")}</button>
     </div>
     <div id="mealBody"><div class="study-empty">불러오는 중…</div></div>
     <div class="study-foot meal-legend">알레르기 번호 · ${ALLERGY.slice(1).map((a, i) => `${i + 1} ${a}`).join(" · ")}</div>`;
@@ -84,9 +84,8 @@ async function renderMeal(key) {
   if (meals === null) { box.innerHTML = `<div class="study-empty">급식 정보를 불러오지 못했어요. 잠시 뒤 다시 열어 주세요.</div>`; return; }
   if (!meals.length) { box.innerHTML = `<div class="study-empty">이날은 급식 정보가 없어요.</div>`; return; }
   box.innerHTML = `<div class="meal-list">${meals.map((m) => `
-    <div class="meal-card${day === next.key && m.name === next.name ? " now" : ""}">
+    <div class="meal-card">
       <div class="meal-head"><span class="meal-name">${esc(m.name)}</span>
-        ${day === next.key && m.name === next.name ? `<span class="meal-tag">다음 끼니</span>` : ""}
         ${m.kcal ? `<span class="meal-kcal">${esc(m.kcal)} kcal</span>` : ""}</div>
       <ul class="meal-dishes">${m.dishes.map((x) => `<li>${esc(x.name)}${x.allergy.length
         ? ` <span class="meal-alg" title="${esc(x.allergy.map((n) => ALLERGY[n]).filter(Boolean).join(", "))}">${x.allergy.join(".")}</span>` : ""}</li>`).join("")}</ul>
@@ -239,9 +238,9 @@ function renderList(mode) {
     <div class="cal-bar">
       ${tab === "list" ? "" : `<div class="cal-nav-group">
         <button class="study-btn small" data-nav="today">오늘</button>
-        <button class="cal-nav" data-nav="prev" aria-label="이전">‹</button>
-        <button class="cal-nav" data-nav="next" aria-label="다음">›</button>
+        <button class="cal-nav" data-nav="prev" type="button" aria-label="이전" title="이전">${icon("chevron_left")}</button>
         <span class="cal-title" id="calTitle"></span>
+        <button class="cal-nav" data-nav="next" type="button" aria-label="다음" title="다음">${icon("chevron_right")}</button>
       </div>`}
       <div class="cal-right">
         <div class="seg">${VIEWS.map(([k, label]) =>

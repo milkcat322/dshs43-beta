@@ -197,8 +197,9 @@ function paintMyStatus() {
   const sid = me.student_id, r = statusMap.get(sid);
   box.innerHTML = `<span class="ms-label">${icon("location_on")} 내 위치</span>
     <b>${r ? locHtml(r) : "아직 안 정했어요"}</b>${r ? `<small>${whenLabel(r.updated_at)} 수정</small>` : ""}${seatChip(sid)}
-    <button class="study-btn small" id="msEdit">${r ? "바꾸기" : "정하기"}</button>
-    <button class="study-btn small" id="msMail" title="프로필 사진에 쓸 학교 메일">${icon("mail")} 이메일 ${myMail ? "바꾸기" : "등록"}</button>
+    <button class="ms-btn" id="msEdit" type="button" aria-label="내 위치 ${r ? "바꾸기" : "정하기"}" title="내 위치 ${r ? "바꾸기" : "정하기"}">${icon("location_on")}${icon("autorenew", "ms-turn")}</button>
+    <span class="ms-bar" aria-hidden="true"></span>
+    <button class="ms-btn" id="msMail" type="button" aria-label="프로필 사진 이메일 ${myMail ? "바꾸기" : "등록"}" title="프로필 사진 이메일 ${myMail ? "바꾸기" : "등록"}">${icon("mail")}${icon("autorenew", "ms-turn")}</button>
     ${seatWanted(sid) && !seatInfo(sid) ? seatNote() : ""}`;
   $("msEdit").onclick = openStatusPicker;
   $("msMail").onclick = openMailForm;

@@ -32,8 +32,8 @@
 .credit-sum .tx { font-size: 12.5px; color: var(--text-dim); line-height: 1.6; }
 .credit-sum .tx b { color: var(--text); font-weight: 600; }
 .subj-official { font-size: 11.5px; color: var(--text-muted); margin-top: 3px; }
-.gpa-hero { display: flex; align-items: center; gap: 16px; background: linear-gradient(135deg, rgba(111,224,196,0.14), rgba(124,111,224,0.12)); border: 1px solid rgba(111,224,196,0.38); border-radius: 0; padding: 16px 18px; margin-bottom: 14px; }
-.gpa-big { font-family: var(--font-num); font-size: 32px; font-weight: 700; color: var(--accent3); line-height: 1; }
+.gpa-hero { display: flex; align-items: center; gap: 16px; background: color-mix(in srgb, var(--accent1) 10%, transparent); border: 1px solid color-mix(in srgb, var(--accent1) 38%, transparent); border-radius: 0; padding: 16px 18px; margin-bottom: 14px; }
+.gpa-big { font-family: var(--font-num); font-size: 32px; font-weight: 700; color: var(--accent1); line-height: 1; }
 .gpa-max { font-size: 13px; color: var(--text-dim); font-weight: 400; }
 .gpa-hero-tx { font-size: 12px; color: var(--text-dim); line-height: 1.65; }
 .gpa-hero-tx b { color: var(--text); font-weight: 600; }
@@ -56,6 +56,36 @@
 .gpa-g:hover { border-color: var(--accent1); }
 .gpa-g.on { background: var(--accent3); border-color: var(--accent3); color: #0a0a0f; }
 .gpa-g.none.on { background: var(--text-muted); border-color: var(--text-muted); color: #0a0a0f; }
+/* 학점 띠(.gpa-strap): 끌어서 등급을 정합니다. 왼쪽 F → 오른쪽 A+.
+   --n 은 등급 수, --gpa-i 는 막대 자리(0 = F. 끄는 동안에는 2.35 같은 소수). 값은 js/timetable.js 의 gpaPaint 가 넣습니다. 색은 테마 색(--accent1). */
+.gpa-hint { font-size: 11.5px; color: var(--text-muted); margin: 0 0 8px; }
+.gpa-now { margin-left: auto; font-family: var(--font-num); font-size: 15px; font-weight: 700; color: var(--accent1); }
+.gpa-now.none { color: var(--text-muted); font-weight: 500; }
+.gpa-strap { --n: 10; --gpa-i: 0; position: relative; padding-top: 12px; cursor: grab; touch-action: pan-y; user-select: none; -webkit-user-select: none; outline: none; }
+.gpa-strap-line { height: 6px; margin: 0 calc(50% / var(--n)); background: var(--border); }
+.gpa-strap-fill { height: 100%; width: calc(var(--gpa-i) * 100% / (var(--n) - 1)); background: var(--accent1); transition: width 0.18s; }
+/* 손잡이: 세로 막대 (너비 8px · 높이 26px). 띠 가운데(위에서 15px)에 맞춥니다 */
+.gpa-strap-thumb { position: absolute; top: 15px; left: calc((var(--gpa-i) + 0.5) * 100% / var(--n)); width: 8px; height: 26px; margin: -13px 0 0 -4px; border-radius: 2px; background: var(--accent1); box-shadow: 0 0 0 2px var(--surface), 0 1px 5px rgba(0,0,0,0.3); transition: left 0.18s, transform 0.15s; }
+.gpa-strap.drag .gpa-strap-thumb { transition: transform 0.15s; transform: scaleY(1.15); }   /* 끄는 동안은 자리(left)를 전환 없이 바로 따라갑니다. 놓으면 가까운 등급으로 부드럽게 붙습니다 */
+.gpa-strap.drag .gpa-strap-fill { transition: none; }
+.gpa-strap.drag { cursor: grabbing; }
+.gpa-strap.none .gpa-strap-thumb { display: none; }
+.gpa-strap.none .gpa-strap-fill { width: 0; }
+.gpa-strap:focus-visible .gpa-strap-thumb { box-shadow: 0 0 0 2px var(--surface), 0 0 0 5px var(--glow); }
+/* 등급 글자: 막대가 있는 글자 하나만 테마 색입니다. 막대가 두 글자 사이에 있으면 그 거리만큼 섞여서
+   (가까운 쪽이 더 진하게) 색이 옆 글자로 넘어가는 것처럼 보입니다. --k 는 글자의 자리(0 = F), --gpa-w 는 섞는 정도(0 ~ 1). */
+.gpa-strap-ticks { display: grid; grid-template-columns: repeat(var(--n), 1fr); margin-top: 12px; }
+.gpa-strap-ticks span { --gpa-w: clamp(0, 1 - max(var(--k) - var(--gpa-i), var(--gpa-i) - var(--k)), 1);
+  text-align: center; font-family: var(--font-num); font-size: 13px; font-weight: 600;
+  color: color-mix(in srgb, var(--accent1) calc(var(--gpa-w) * 100%), var(--text-muted)); }
+.gpa-strap.none .gpa-strap-ticks span { color: var(--text-muted); }   /* 고르지 않았으면 모두 회색 */
+/* 손을 뗄 때: 자리(--gpa-i)를 숫자로 등록할 수 있는 브라우저(html.gpa-anim — js/timetable.js)에서는 그 숫자 하나에 전환을 걸어
+   막대 · 채움 · 글자 색이 한꺼번에 가까운 등급으로 붙습니다. 끄는 동안(.drag)에는 전환 없이 바로 따라갑니다. */
+.gpa-anim .gpa-strap { transition: --gpa-i 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+.gpa-anim .gpa-strap.drag { transition: none; }
+.gpa-anim .gpa-strap-fill { transition: none; }
+.gpa-anim .gpa-strap-thumb { transition: transform 0.15s; }
+@media (prefers-reduced-motion: reduce) { .gpa-strap, .gpa-anim .gpa-strap, .gpa-strap-fill, .gpa-strap-thumb { transition: none; } }
 .pf-note { font-size: 11.5px; color: var(--text-muted); line-height: 1.7; background: var(--surface); border: 1px dashed var(--border); border-radius: 0; padding: 11px 14px; margin-top: 4px; }
 .pf-note b { color: var(--text-dim); font-weight: 600; }
 .gpa-actions { display: flex; gap: 8px; margin: 16px 0 10px; }
@@ -189,16 +219,14 @@ textarea.study-input { resize: vertical; line-height: 1.6; }
 .tt-subj { display: inline-flex; align-items: baseline; gap: 5px; font-size: 12.5px; color: var(--text); background: var(--card); border: 1px solid var(--border); border-radius: 0; padding: 5px 11px; }
 .tt-subj small { font-size: 10.5px; color: var(--text-muted); }
 /* 급식 */
-.meal-nav { display: flex; align-items: center; gap: 8px; margin: 4px 0 12px; }
-.meal-nav .study-btn { flex-shrink: 0; padding: 8px 14px; }
-.meal-day { flex: 1; min-width: 0; background: none; border: none; font-family: 'Pretendard Variable', 'Pretendard', sans-serif; font-size: 15px; font-weight: 700; color: var(--text); cursor: pointer; }
-.meal-rel { font-size: 12px; font-weight: 600; color: var(--accent3); margin-left: 4px; }
+/* 급식 날짜 이동: ‹ 날짜 › 가 붙어 있고, 화살표는 달력과 같은 박스 없는 아이콘(.cal-nav — css/calendar.css) */
+.meal-nav { display: flex; align-items: center; gap: 4px; margin: 4px 0 12px; }
+.meal-day { padding: 0 4px; background: none; border: none; font-family: 'Pretendard Variable', 'Pretendard', sans-serif; font-size: 15px; font-weight: 700; color: var(--text); cursor: pointer; }
+.meal-rel { font-size: 12px; font-weight: 600; color: var(--accent1); margin-left: 4px; }
 .meal-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
 .meal-card { background: var(--card); border: 1px solid var(--border); border-radius: 0; padding: 14px 16px; }
-.meal-card.now { border-color: var(--accent3); box-shadow: 0 0 0 1px var(--accent3) inset; }
 .meal-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
 .meal-name { font-size: 15px; font-weight: 700; color: var(--text); }
-.meal-tag { font-size: 11px; font-weight: 700; color: var(--accent3); background: color-mix(in srgb, var(--accent3) 14%, transparent); border-radius: 0; padding: 2px 8px; }
 .meal-kcal { margin-left: auto; font-family: var(--font-num); font-size: 11px; color: var(--text-muted); }
 .meal-dishes { list-style: none; margin: 0; padding: 0; }
 .meal-dishes li { font-size: 14px; color: var(--text); line-height: 1.5; padding: 3px 0; }

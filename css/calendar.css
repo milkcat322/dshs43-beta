@@ -35,11 +35,9 @@
   --c: #8fc7e8;
 }
 
+/* 선택 버튼 묶음(달력 보기 · 글자 크기 Aa · 정렬 등): 묶음을 감싸는 박스는 없고, 고른 버튼 뒤의 바탕(.seg-ink)만 있습니다 */
 .seg {
   display: inline-flex;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 11px;
   padding: 3px;
   margin-bottom: 14px;
 }
@@ -261,25 +259,35 @@
 .cal-title {
   font-size: 16px;
   font-weight: 800;
-  margin-left: 4px;
   white-space: nowrap;
 }
 
+/* 달력 이동: ‹ 제목 › 순서. 박스 없이 아이콘만 있고, 올리면 옅은 테마 색 동그라미가 깔립니다 */
 .cal-nav {
-  background: none;
-  border: 1px solid var(--border);
-  color: var(--text-dim);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 30px;
   height: 30px;
-  border-radius: 9px;
-  font-size: 18px;
-  line-height: 1;
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: 50%;
+  color: var(--text-dim);
   cursor: pointer;
+  transition: background 0.2s, color 0.2s;
 }
 
-.cal-nav:hover {
-  border-color: var(--accent1);
-  color: var(--text);
+.cal-nav .ic {
+  width: 24px;
+  height: 24px;
+}
+
+.cal-nav:hover,
+.cal-nav:focus-visible {
+  background: color-mix(in srgb, var(--accent1) 14%, transparent);
+  color: var(--accent1);
+  outline: none;
 }
 
 /* FullCalendar — productivity 일정 화면 스타일을 이 사이트 색으로 */

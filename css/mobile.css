@@ -17,7 +17,7 @@
   /* 로고는 위에 붙는 아이콘 줄의 .nav-logo 하나만 씁니다. 맨 위에서는 가운데에 크게,
      내리는 만큼(--hp: 0 → 1) 작아지며 왼쪽으로 옮겨 갑니다 (위치는 아래 스크립트가 계산). 머리글 h1 은 자리만 차지합니다 */
   h1 { font-size: 22px; margin: 0; visibility: hidden; }
-  .nav-logo { display: block; transform-origin: left center; will-change: transform; pointer-events: none; white-space: nowrap; }
+  .nav-logo { display: block; transform-origin: left center; will-change: transform; white-space: nowrap; }   /* 누르면 시간표로 */
 
   /* 설치 안내는 한 줄로. 자세한 설명은 설치 버튼을 누르면 나옵니다 */
   .install-bar { padding: 8px 10px; margin-bottom: 10px; gap: 10px; border-radius: 0; }
@@ -74,7 +74,8 @@
   .timetable:not(.cmp-table) .class-cell { padding: 3px 3px; border-radius: 0; min-height: 44px; overflow: hidden; word-break: keep-all; overflow-wrap: anywhere; }
   :root { --tt-font: 11px; }   /* 폰에서의 시간표 과목 글씨 크기 (칸이 좁아 더 키우면 5글자 과목이 두 줄이 됩니다) */
   .timetable:not(.cmp-table) .class-cell .subj-name { line-height: 1.2; letter-spacing: -0.03em; }
-  .legend { margin-top: 12px; padding: 12px 14px; }
+  .tt-under { gap: 8px; margin-top: 8px; }
+  .tt-under .legend { padding: 6px 10px; }
 
   /* 내 일정 · 수행평가 · 할 일 */
   .study-head { align-items: center; margin-bottom: 10px; }
@@ -89,7 +90,7 @@
   .cal-bar { gap: 8px; margin-bottom: 8px; }
   .cal-nav-group { width: 100%; }
   .cal-nav { width: 34px; height: 34px; }
-  .cal-title { margin-left: auto; font-size: 15px; }
+  .cal-title { font-size: 15px; }
   .cal-right { gap: 8px; }
   .cal-right .seg { order: -1; display: flex; width: 100%; }
   .seg-btn { flex: 1; padding: 8px 0; }

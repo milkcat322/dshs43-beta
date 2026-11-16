@@ -226,14 +226,16 @@ function ttGridHtml(ban = myBan()) {
   }
   const used = SUBJECTS_43.map(([s]) => s).filter((s) => Object.values(tt).includes(s));
   const legend = used.map((s) => `<div class="legend-item"><div class="legend-dot color-${colorIdx43(s)}"></div><span>${esc(subjName(s))}</span></div>`).join("");
-  return `<div class="tt-tools">${ttFontHtml()}</div>
-    <div class="timetable-wrap">
+  return `<div class="timetable-wrap">
       <table class="timetable">
         <thead><tr><th></th>${TT_DAYS.map((d, i) => `<th class="day-header ${TT_DAY_CLASS[i]}">${d}요일</th>`).join("")}</tr></thead>
         <tbody>${rows}</tbody>
       </table>
     </div>
-    <div class="legend"><div class="legend-title">과목 범례</div><div class="legend-items">${legend}</div></div>`;
+    <div class="tt-under">
+      <div class="legend"><div class="legend-items">${legend}</div></div>
+      ${ttFontHtml()}
+    </div>`;
 }
 
 // ---------- 시간표 검색 ----------
@@ -424,24 +426,49 @@ const PF_43 = new Set(["진로"]);
 const GPA_SKIP = new Set(["체육"]);
 const GPA_SUBJECTS = SUBJECTS_43.filter(([s]) => !GPA_SKIP.has(s));
 const GPA_CREDITS = GPA_SUBJECTS.reduce((a, [, c]) => a + c, 0);   // 30
+// 띠의 막대 자리(--gpa-i)를 숫자로 등록해 둡니다: 손을 뗄 때 이 숫자 하나가 부드럽게 바뀌면서 막대 · 채움 · 글자 색이 함께 움직입니다.
+// 등록을 지원하지 않는 브라우저에서는 건너뛰고(html 에 gpa-anim 이 안 붙음), 막대 · 채움만 따로 움직입니다 (css/study.css).
+try { CSS.registerProperty({ name: "--gpa-i", syntax: "<number>", inherits: true, initialValue: "0" }); document.documentElement.classList.add("gpa-anim"); } catch { }
+// 띠에 늘어놓는 순서: 낮은 등급부터 (왼쪽 F → 오른쪽 A+)
+const GPA_ORDER = GRADES.map(([g]) => g).reverse();
+// 고른 등급(st)으로 평균 칸과 과목마다의 띠를 다시 칠합니다. 띠를 끄는 동안에도 부르므로 화면을 새로 만들지 않고 값만 바꿉니다.
+function gpaPaint(st) {
+  const box = $("panel-gpa");
+  if (!box || !$("gpaHero")) return;
+  for (const s of PF_43) st[s] = "A+";
+  let cred = 0, pts = 0;
+  for (const [s, c] of GPA_SUBJECTS) if (st[s] in GRADE_PT) { cred += c; pts += c * GRADE_PT[st[s]]; }
+  $("gpaHero").innerHTML = `
+      <div><div class="gpa-big">${cred ? (pts / cred).toFixed(2) : "–"}</div><div class="gpa-max">/ 4.30</div></div>
+      <div class="gpa-hero-tx"><b>평균 학점</b><br>입력한 ${cred}학점 기준 · 전체 ${GPA_CREDITS}학점<br>${cred < GPA_CREDITS
+      ? `<span style="color:var(--text-muted)">아직 ${GPA_CREDITS - cred}학점이 미입력이에요</span>` : '<span style="color:var(--accent1)">모든 과목 입력 완료</span>'}</div>`;
+  box.querySelectorAll(".gpa-strap").forEach((el) => {
+    const g = st[el.dataset.gs], i = GPA_ORDER.indexOf(g);
+    el.classList.toggle("none", i < 0);
+    el.style.setProperty("--gpa-i", Math.max(i, 0));
+    el.setAttribute("aria-valuenow", Math.max(i, 0));
+    el.setAttribute("aria-valuetext", i < 0 ? "고르지 않음" : g);
+    el.querySelectorAll(".gpa-strap-ticks span").forEach((t, k) => t.classList.toggle("on", k === i));
+    const now = el.closest(".gpa-row").querySelector(".gpa-now");
+    now.textContent = i < 0 ? "미입력" : GRADE_PT[g].toFixed(1);   // 등급 글자는 아래 띠에 표시되므로 평점만
+    now.classList.toggle("none", i < 0);
+  });
+}
 function renderGpa() {
   const box = $("panel-gpa");
   if (!box) return;
-  const st = gpaLoad();
-  for (const s of PF_43) st[s] = "A+";
   const graded = GPA_SUBJECTS.filter(([s]) => !PF_43.has(s));
-  let cred = 0, pts = 0;
-  for (const [s, c] of GPA_SUBJECTS) if (st[s] in GRADE_PT) { cred += c; pts += c * GRADE_PT[st[s]]; }
   const pfCred = GPA_SUBJECTS.filter(([s]) => PF_43.has(s)).reduce((a, [, c]) => a + c, 0);
   box.innerHTML = `
-    <div class="gpa-hero">
-      <div><div class="gpa-big">${cred ? (pts / cred).toFixed(2) : "–"}</div><div class="gpa-max">/ 4.30</div></div>
-      <div class="gpa-hero-tx"><b>평균 학점</b><br>입력한 ${cred}학점 기준 · 전체 ${GPA_CREDITS}학점<br>${cred < GPA_CREDITS
-      ? `<span style="color:var(--text-muted)">아직 ${GPA_CREDITS - cred}학점이 미입력이에요</span>` : '<span style="color:var(--accent3)">모든 과목 입력 완료</span>'}</div>
-    </div>
+    <div class="gpa-hero" id="gpaHero"></div>
+    <div class="gpa-hint">띠를 끌거나 눌러서 등급을 정해요. 고른 등급을 한 번 더 누르면 지워져요.</div>
     ${graded.map(([s, c]) => `<div class="gpa-row">
-      <div class="gpa-head"><span class="gpa-name">${esc(subjName(s))}</span><span class="gpa-cred">${c}학점</span></div>
-      <div class="gpa-grades">${GRADES.map(([g]) => `<button class="gpa-g${st[s] === g ? " on" : ""}${g === "F" ? " none" : ""}" data-gs="${esc(s)}" data-gg="${g}">${g}</button>`).join("")}</div>
+      <div class="gpa-head"><span class="gpa-name">${esc(subjName(s))}</span><span class="gpa-cred">${c}학점</span><span class="gpa-now"></span></div>
+      <div class="gpa-strap" data-gs="${esc(s)}" role="slider" tabindex="0" aria-label="${esc(subjName(s))} 등급" aria-valuemin="0" aria-valuemax="${GPA_ORDER.length - 1}" style="--n:${GPA_ORDER.length}">
+        <div class="gpa-strap-line"><div class="gpa-strap-fill"></div></div>
+        <div class="gpa-strap-thumb"></div>
+        <div class="gpa-strap-ticks">${GPA_ORDER.map((g, k) => `<span style="--k:${k}">${g}</span>`).join("")}</div>
+      </div>
     </div>`).join("")}
     <div class="pf-note">P/F 과목 <b>${[...PF_43].map(subjName).join(" · ")}</b> (${pfCred}학점)은 전원 Pass라서 <b>A+(4.3)</b>로 자동 계산돼요. 따로 고를 필요 없어요.</div>
     <div class="gpa-actions">
@@ -449,13 +476,52 @@ function renderGpa() {
       <button class="gpa-act" id="gpaClear">전체 해제</button>
     </div>
     <div class="gpa-note"><b>계산 방식</b> — (과목 학점 × 등급 평점)을 모두 더한 뒤, 등급을 고른 과목의 학점 합으로 나눠요. 체육은 계산에 넣지 않고, P/F 과목은 A+로 계산돼요. 등급을 고르지 않은 과목은 계산에서 빠지고, 같은 등급을 다시 누르면 해제돼요. 고른 등급은 이 기기에만 저장돼요.</div>`;
-  box.querySelectorAll("[data-gs]").forEach((b) => b.onclick = () => {
-    const cur = gpaLoad();
-    if (cur[b.dataset.gs] === b.dataset.gg) delete cur[b.dataset.gs]; else cur[b.dataset.gs] = b.dataset.gg;
-    gpaSave(cur); renderGpa();
-  });
-  $("gpaAll").onclick = () => { gpaSave(Object.fromEntries(GPA_SUBJECTS.map(([s]) => [s, "A+"]))); renderGpa(); };
-  $("gpaClear").onclick = () => { gpaSave({}); renderGpa(); };
+  gpaPaint(gpaLoad());
+  box.querySelectorAll(".gpa-strap").forEach(bindGpaStrap);
+  $("gpaAll").onclick = () => { gpaSave(Object.fromEntries(GPA_SUBJECTS.map(([s]) => [s, "A+"]))); gpaPaint(gpaLoad()); };
+  $("gpaClear").onclick = () => { gpaSave({}); gpaPaint(gpaLoad()); };
+}
+// 띠 하나: 끌거나 눌러서 등급을 정합니다. 고른 등급을 (끌지 않고) 한 번 더 누르면 지워집니다.
+// 끄는 동안에는 화면만 따라가고, 손을 뗄 때 저장합니다. 세로로 넘기다(스크롤) 취소되면 원래대로 돌립니다.
+// 키보드: ← → 로 한 칸, Home · End 로 양 끝, Delete 로 지움.
+function bindGpaStrap(el) {
+  const s = el.dataset.gs, n = GPA_ORDER.length;
+  const at = (x) => { const r = el.getBoundingClientRect(); return Math.max(0, Math.min(n - 1, Math.floor(((x - r.left) / r.width) * n))); };
+  // 끄는 동안의 막대 자리: 칸 사이도 그대로 (0 ~ n-1 사이의 소수). 손을 떼면 가까운 등급(at)으로 붙습니다
+  const fine = (x) => { const r = el.getBoundingClientRect(); return Math.max(0, Math.min(n - 1, ((x - r.left) / r.width) * n - 0.5)); };
+  const set = (i) => { const st = gpaLoad(); if (i < 0) delete st[s]; else st[s] = GPA_ORDER[i]; gpaSave(st); gpaPaint(gpaLoad()); };
+  let drag = null;   // { x: 누른 자리, was: 누르기 전 등급 자리, moved: 끌었는지 }
+  el.onpointerdown = (e) => {
+    if (e.button) return;
+    drag = { x: e.clientX, was: GPA_ORDER.indexOf(gpaLoad()[s]), moved: false };
+    try { el.setPointerCapture(e.pointerId); } catch {}
+  };
+  el.onpointermove = (e) => {
+    if (!drag) return;
+    if (Math.abs(e.clientX - drag.x) > 4) { drag.moved = true; el.classList.add("drag"); }
+    if (!drag.moved) return;
+    const st = gpaLoad(); st[s] = GPA_ORDER[at(e.clientX)]; gpaPaint(st);   // 저장하지 않고 보여 주기만 (평균 · 글자는 가까운 등급으로)
+    el.style.setProperty("--gpa-i", fine(e.clientX).toFixed(3));   // 막대와 채움은 마우스 · 손가락을 끊기지 않고 따라갑니다
+  };
+  el.onpointerup = (e) => {
+    if (!drag) return;
+    const i = at(e.clientX), again = !drag.moved && drag.was === i;
+    drag = null; el.classList.remove("drag");
+    set(again ? -1 : i);
+  };
+  el.onpointercancel = () => { drag = null; el.classList.remove("drag"); gpaPaint(gpaLoad()); };
+  el.onkeydown = (e) => {
+    const cur = GPA_ORDER.indexOf(gpaLoad()[s]);
+    let i = null;
+    if (e.key === "ArrowRight" || e.key === "ArrowUp") i = cur < 0 ? n - 1 : Math.min(n - 1, cur + 1);
+    else if (e.key === "ArrowLeft" || e.key === "ArrowDown") i = cur < 0 ? n - 1 : Math.max(0, cur - 1);
+    else if (e.key === "Home") i = 0;
+    else if (e.key === "End") i = n - 1;
+    else if (e.key === "Delete" || e.key === "Backspace") i = -1;
+    if (i === null) return;
+    e.preventDefault();
+    set(i);
+  };
 }
 
 // ---------- 배경화면 ----------
@@ -472,12 +538,13 @@ const WP_SIZES = [
 const wp = { size: "auto", layout: "lock", theme: "dark", canvas: null };
 function wpPanelHtml() {
   const opts = WP_SIZES.map(([g, items]) => `<optgroup label="${g}">${items.map(([v, l]) => `<option value="${v}"${wp.size === v ? " selected" : ""}>${l}</option>`).join("")}</optgroup>`).join("");
-  const chip = (k, v, l) => `<button class="wp-chip${wp[k] === v ? " on" : ""}" data-wp="${k}" data-wv="${v}">${l}</button>`;
+  // 배치 · 테마 고르기: 박스 없는 아이콘 버튼 (이름은 마우스를 올리면 나옵니다)
+  const chip = (k, v, ic, l) => `<button class="wp-chip${wp[k] === v ? " on" : ""}" type="button" data-wp="${k}" data-wv="${v}" aria-label="${l}" title="${l}">${icon(ic)}</button>`;
   return `
     <div class="wp-controls">
       <div><div class="wp-group-label">해상도</div><select class="wp-select" id="wpSize">${opts}</select></div>
-      <div><div class="wp-group-label">배치</div><div class="wp-chips">${chip("layout", "lock", icon("lock") + " 잠금화면 (시계 여백)")}${chip("layout", "home", icon("smartphone") + " 홈화면 (꽉 채움)")}</div></div>
-      <div><div class="wp-group-label">테마</div><div class="wp-chips">${chip("theme", "dark", icon("dark_mode") + " 다크")}${chip("theme", "light", icon("light_mode") + " 라이트")}</div></div>
+      <div><div class="wp-group-label">배치</div><div class="wp-chips">${chip("layout", "lock", "lock", "잠금화면 (시계 여백)")}${chip("layout", "home", "smartphone", "홈화면 (꽉 채움)")}</div></div>
+      <div><div class="wp-group-label">테마</div><div class="wp-chips">${chip("theme", "dark", "dark_mode", "다크")}${chip("theme", "light", "light_mode", "라이트")}</div></div>
     </div>
     <div class="wp-preview-area">
       <div class="wp-frame"><img id="wpPreview" alt="배경화면 미리보기"></div>
@@ -521,6 +588,18 @@ function wpWrap(ctx, text, maxW) {
   if (ctx.measureText(text).width <= maxW) return [text];
   for (let cut = text.length - 1; cut > 0; cut--) if (ctx.measureText(text.slice(0, cut)).width <= maxW) return [text.slice(0, cut), text.slice(cut)];
   return [text];
+}
+// 화면 시간표의 과목 색(css/timetable.css 의 .color-N 과 수업 외 활동 칸)을 그대로 읽어 옵니다.
+// 색 · 농도(--tt-alpha)를 css 에서 바꾸면 배경화면도 따라갑니다.
+function wpCellColors() {
+  const t = document.createElement("table");
+  t.className = "timetable";
+  t.style.cssText = "position:absolute;visibility:hidden;pointer-events:none";
+  t.innerHTML = `<tbody><tr>${Array.from({ length: 13 }, (_, i) => `<td class="color-${i}"></td>`).join("")}<td class="common-cell"></td></tr></tbody>`;
+  document.body.append(t);
+  const cs = [...t.querySelectorAll("td")].map((td) => getComputedStyle(td).backgroundColor);
+  t.remove();
+  return Object.assign(cs.slice(0, 13), { common: cs[13] });
 }
 function generateWallpaper() {
   const img = $("wpPreview");
@@ -568,7 +647,11 @@ function generateWallpaper() {
     ctx.fillStyle = dark ? WP_DAY_COLORS[i] : wpDarken(WP_DAY_COLORS[i], 0.35);
     ctx.fillText(d, gridX + periodW + cellW * (i + 0.5), gridTop + headH * 0.75);
   });
-  const gap = Math.max(2, S * 0.005), radius = 0;   // 화면과 같이 각진 칸
+  // 칸은 화면의 시간표와 같은 모양입니다: 이어지는 교시는 한 칸으로 묶고(ttBlockEnd), 과목 색은 css 의 것을 그대로 읽어 쓰고(wpCellColors),
+  // 글자는 흰색으로 칸의 왼쪽 위에 둡니다.
+  const colors = wpCellColors();
+  const gap = Math.max(1, S * 0.0025), taken = {};   // taken[요일]: 위에서 묶은 칸이 차지한 마지막 교시
+  const nameSize = Math.min(rowH * 0.3, cellW * 0.17), inPad = nameSize * 0.5;
   for (let p = 1; p <= maxPeriod; p++) {
     const y = gridTop + headH + rowH * (p - 1);
     ctx.textAlign = "center";
@@ -576,26 +659,32 @@ function generateWallpaper() {
     ctx.fillStyle = dark ? "rgba(136,136,170,0.65)" : "rgba(107,107,133,0.8)";
     ctx.fillText(String(p), gridX + periodW * 0.5, y + rowH * 0.58);
     TT_DAYS.forEach((day, i) => {
+      if (taken[day] >= p) return;   // 위 칸이 이 자리까지 차지함
       const subj = tt[`${day}-${p}`];
       const x = gridX + periodW + cellW * i;
-      const bx = x + gap, by = y + gap, bw = cellW - gap * 2, bh = rowH - gap * 2;
       if (!subj) {
         ctx.fillStyle = dark ? "rgba(255,255,255,0.022)" : "rgba(0,0,0,0.03)";
-        wpRoundRect(ctx, bx, by, bw, bh, radius); ctx.fill();
+        ctx.fillRect(x + gap, y + gap, cellW - gap * 2, rowH - gap * 2);
         return;
       }
-      const base = subjColor(subj);
-      ctx.fillStyle = wpRgba(base, dark ? 0.22 : 0.16);
-      wpRoundRect(ctx, bx, by, bw, bh, radius); ctx.fill();
-      ctx.strokeStyle = dark ? wpRgba(base, 0.42) : wpRgba(base, 0.75);
-      ctx.lineWidth = Math.max(1, S * 0.0015);
-      wpRoundRect(ctx, bx, by, bw, bh, radius); ctx.stroke();
-      const nameSize = Math.min(rowH * 0.32, cellW * 0.185);
-      ctx.fillStyle = dark ? base : wpDarken(base, 0.45);
+      const to = taken[day] = ttBlockEnd(tt, day, p, maxPeriod);
+      const bx = x + gap, by = y + gap, bw = cellW - gap * 2, bh = rowH * (to - p + 1) - gap * 2;
+      const real = isSubject43(subj);
+      // css 에서 읽은 색을 캔버스가 알아듣지 못하면(오래된 브라우저) 앞에 넣어 둔 예비 색이 그대로 남습니다
+      ctx.fillStyle = real ? subjColor(subj) : "#aab2bd";
+      ctx.fillStyle = real ? colors[colorIdx43(subj)] : colors.common;
+      ctx.fillRect(bx, by, bw, bh);
+      ctx.fillStyle = "#fff";
+      ctx.textAlign = "left";
       ctx.font = `700 ${nameSize}px ${FONT}`;
-      const lines = wpWrap(ctx, subjName(subj), bw - S * 0.012);
-      let ty = y + rowH / 2 - (lines.length * nameSize * 1.12) / 2 + nameSize * 0.95;
-      lines.forEach((l) => { ctx.fillText(l, x + cellW / 2, ty); ty += nameSize * 1.12; });
+      ctx.shadowColor = "rgba(0,0,0,0.22)"; ctx.shadowBlur = nameSize * 0.15;
+      let ty = by + inPad + nameSize * 0.85;
+      wpWrap(ctx, real ? subjName(subj) : subj, bw - inPad * 2).forEach((l) => { ctx.fillText(l, bx + inPad, ty); ty += nameSize * 1.18; });
+      if (!real) {   // 수업 외 활동(자율 · 동아리 · R&E): 화면처럼 아래에 작게 '전체'
+        ctx.font = `500 ${nameSize * 0.8}px ${FONT}`;
+        ctx.fillText("전체", bx + inPad, ty - nameSize * 0.08);
+      }
+      ctx.shadowColor = "transparent"; ctx.shadowBlur = 0;
     });
   }
   wp.canvas = canvas;

@@ -86,6 +86,15 @@ function renderNav() {
   applyAccess();
 }
 
+// 제목(dshs43.app — 머리글의 h1 과 폰에서 위에 붙는 로고)을 누르면 시간표 탭으로 갑니다.
+// 로그인한 43기 학생일 때만 (로그인 전 · 관리자 · 다른 기수 계정은 그대로).
+function goTimetable() {
+  if (!me || me.is_admin || otherCohort()) return;
+  openStudy("tt");
+  scrollTo({ top: 0 });
+}
+document.querySelectorAll(".header h1, .nav-logo").forEach((el) => { el.onclick = goTimetable; el.title = "시간표로"; });
+
 // ---------- 인터넷 연결 · 로그인에 따라 보이는 것 ----------
 // 인터넷이 없으면 '연결되어 있지 않아요' 안내만 보여 줍니다 (43기는 오프라인에서 볼 시간표가 아직 없음).
 // 인터넷이 있으면 로그인 전에는 시작하기 화면만 보입니다. 화면을 숨기는 규칙은 index.html 의 body.offline · body.need-login.
