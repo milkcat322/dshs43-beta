@@ -66,7 +66,8 @@ let ttTab = "tt";   // 시간표 탭 안의 칸: tt 시간표 · gpa 학점 계�
 const lastPeriod = (tt) => Math.max(7, ...Object.keys(tt).map((k) => +k.split("-")[1]));
 
 // ---------- 시간표 칸의 선생님 고르기 (ttpicks43.sql) ----------
-// 선생님이 여러 명인 과목은 반 학생이 그 요일 · 교시 수업의 선생님을 고르고(set_tt_teacher), 같은 반 친구들 시간표에도 보입니다.
+// 선생님이 여러 명인 과목은 관리자가 권한을 준 반 학생(cohort43_tt_editors)이 그 요일 · 교시 수업의 선생님을 고르고(set_tt_teacher),
+// 같은 반 친구들 시간표에도 보입니다. 권한은 관리자 사이트 '학생' 칸에서 줍니다.
 //  - 보통 과목: 한 번 고르면 매주 같음 (on_date = WEEKLY)
 //  - 격주로 선생님이 바뀌는 과목(ALT_SUBJECTS): 기말고사(1학년 지필평가) 전까지 그 요일 · 교시 수업을 날짜마다 고름
 const ALT_SUBJECTS = new Set(["화학", "기하와 벡터", "적분과 통계", "물리"]);
@@ -80,6 +81,18 @@ async function loadTtPicks(force = false) {
   if (error) return;   // 표가 아직 없으면(SQL 실행 전) 선생님을 모두 보여 줍니다
   ttPicksAt = Date.now();
   ttPicks = new Map(data.map((r) => [`${r.ban}|${r.day}|${r.period}|${r.on_date}`, r.teacher]));
+}
+// 내가 선생님을 고를 수 있는지 (관리자가 준 권한). 표가 아직 없으면(SQL 실행 전) 예전처럼 반 학생 누구나
+let ttEditor = null, ttEditorFor = null;   // true · false · null(아직 모름), 누구 것인지(me.id)
+const canPickTt = () => !!me && ttEditorFor === me.id && ttEditor === true;
+async function loadTtEditor() {
+  if (!sb) await sbWait;
+  if (!me || (ttEditorFor === me.id && ttEditor !== null)) return;
+  const id = me.id;
+  const { data, error } = await sb.from("cohort43_tt_editors").select("student_id").limit(1);
+  if (error && !(error.code === "42P01" || error.code === "PGRST205")) return;   // 연결 문제 → 다음에 다시
+  ttEditorFor = id;
+  ttEditor = error ? true : data.length > 0;   // 표가 없으면 예전처럼
 }
 // 다음 1학년 지필평가 시작일 (학사일정을 못 받았으면 2026-12-14). 그 전까지의 날짜만 고릅니다
 function nextExam() {
@@ -110,7 +123,8 @@ async function openTtCell(ban, d, p) {
   if (!s) return;
   const [st, en] = PERIOD_TIME[p];
   const list = teachersOf(s), multi = list.length > 1, alt = ALT_SUBJECTS.has(s) && multi;
-  const mine = multi && ban === myBan();
+  const myClass = multi && ban === myBan();
+  let mine = myClass && canPickTt();
   const btns = (date, cur) => `<div class="study-row tt-pick">${list.map((t) =>
     `<button class="study-btn${cur === t ? " primary" : ""}" data-tpick="${esc(t)}" data-tdate="${date}">${esc(t)}</button>`).join("")}</div>`;
   const draw = () => {
@@ -132,12 +146,14 @@ async function openTtCell(ban, d, p) {
         ? `${esc(list.join(" · "))} <span class="ev-hint">${alt ? "격주로 바뀌어요 · " : ""}아직 정해지지 않았어요</span>`
         : `<b>${esc(TT_TEACHERS[s] || "정보 없음")}</b>`}</div>
       ${pick}
-      ${mine ? `<div class="study-foot" style="text-align:left">고르면 ${ban}반 친구들 시간표에도 적용돼요. 같은 선생님을 다시 누르면 지워져요.</div>` : ""}`);
+      ${mine ? `<div class="study-foot" style="text-align:left">고르면 ${ban}반 친구들 시간표에도 적용돼요. 같은 선생님을 다시 누르면 지워져요.</div>`
+        : myClass && ttEditorFor === me?.id && ttEditor === false ? `<div class="study-foot" style="text-align:left">선생님은 관리자에게 권한을 받은 학생이 골라요.</div>` : ""}`);
     document.querySelectorAll("[data-tpick]").forEach((b) => b.onclick = async () => {
       const date = b.dataset.tdate, key = `${ban}|${d}|${p}|${date}`;
       const t = ttPicks.get(key) === b.dataset.tpick ? null : b.dataset.tpick;   // 같은 걸 다시 누르면 지움
       b.disabled = true;
       const { error } = await sb.rpc("set_tt_teacher", { p_ban: ban, p_day: d, p_period: p, p_on_date: date, p_teacher: t });
+      if (error && /no permission/.test(error.message || "")) { ttEditor = false; mine = false; draw(); return toast("선생님을 고를 권한이 없어요", true); }
       if (error) { b.disabled = false; return toast("저장하지 못했어요. 잠시 뒤 다시 시도해 주세요", true); }
       if (t) ttPicks.set(key, t); else ttPicks.delete(key);
       toast(t ? `${ban}반 친구들 시간표에도 적용했어요` : "선택을 지웠어요");
@@ -148,7 +164,8 @@ async function openTtCell(ban, d, p) {
   };
   draw();
   if (multi) {
-    await Promise.all([loadAcademic(), loadTtPicks()]);
+    await Promise.all([loadAcademic(), loadTtPicks(), myClass ? loadTtEditor() : null]);
+    mine = myClass && canPickTt();
     if ($("studyModal").classList.contains("show")) draw();
   }
 }
