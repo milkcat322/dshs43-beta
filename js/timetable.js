@@ -61,6 +61,16 @@ const subjColor = (name) => {
   return i < 0 ? "#8888aa" : SUBJ_COLORS[i % SUBJ_COLORS.length];
 };
 const semesterLabel = () => { const m = new Date().getMonth() + 1; return m >= 3 && m < 8 ? "1학기" : "2학기"; };
+// 시간표 글자 크기: s 작게 · m 중간 · l 크게. 이 기기에 기억하고, html 의 data-tt-font 로 CSS(css/timetable.css 의 --tt-scale)에 알립니다.
+const TT_FONT_KEY = "dshs-tt-font";
+let ttFont = (() => { try { return localStorage.getItem(TT_FONT_KEY); } catch { return null; } })();
+if (!["s", "m", "l"].includes(ttFont)) ttFont = "m";
+document.documentElement.dataset.ttFont = ttFont;
+// 글자 크기 버튼: 같은 Aa 아이콘을 크기만 다르게 세 개 (누르는 동작은 bindTtCells)
+function ttFontHtml() {
+  return `<div class="seg tt-size" role="group" aria-label="시간표 글자 크기">${[["s", "작게"], ["m", "중간"], ["l", "크게"]].map(([k, label]) =>
+    `<button type="button" class="seg-btn${ttFont === k ? " on" : ""}" data-ttfont="${k}" aria-label="글자 ${label}" title="글자 ${label}" aria-pressed="${ttFont === k}">${icon("match_case")}</button>`).join("")}</div>`;
+}
 let ttTab = "tt";   // 시간표 탭 안의 칸: tt 시간표 · gpa 학점 계산 · wp 배경화면
 
 const lastPeriod = (tt) => Math.max(7, ...Object.keys(tt).map((k) => +k.split("-")[1]));
@@ -118,10 +128,10 @@ function slotTeacher(ban, d, p, date) {
 // 이번 주(그 요일)의 날짜
 const thisWeekDate = (d) => { const x = new Date(); x.setHours(0, 0, 0, 0); x.setDate(x.getDate() - ((x.getDay() + 6) % 7) + TT_DAYS.indexOf(d)); return dayKey(x); };
 // 칸을 누르면: 과목 · 교시 · 선생님. 선생님이 여러 명이면 내 반은 고를 수 있어요 (격주 과목은 날짜마다)
-async function openTtCell(ban, d, p) {
+async function openTtCell(ban, d, p, to = p) {   // to: 묶인 블록의 마지막 교시 (한 교시면 p)
   const s = classTimetable(ban)[`${d}-${p}`];
   if (!s) return;
-  const [st, en] = PERIOD_TIME[p];
+  const st = PERIOD_TIME[p][0], en = PERIOD_TIME[to][1];
   const list = teachersOf(s), multi = list.length > 1, alt = ALT_SUBJECTS.has(s) && multi;
   const myClass = multi && ban === myBan();
   let mine = myClass && canPickTt();
@@ -140,7 +150,7 @@ async function openTtCell(ban, d, p) {
         : `<div class="study-foot" style="text-align:left">기말고사 전까지 남은 수업이 없어요.</div>`;
     }
     openSheet(esc(subjName(s)), `
-      <div class="asg-body">${ban}반 · ${d}요일 ${p}교시 (${st}–${en})</div>
+      <div class="asg-body">${ban}반 · ${d}요일 ${p}${to > p ? `–${to}` : ""}교시 (${st}–${en})</div>
       <label class="study-label">선생님${alt ? " (이번 주)" : ""}</label>
       <div class="tt-teacher">${now ? `<b>${esc(now)}</b>` : multi
         ? `${esc(list.join(" · "))} <span class="ev-hint">${alt ? "격주로 바뀌어요 · " : ""}아직 정해지지 않았어요</span>`
@@ -152,10 +162,13 @@ async function openTtCell(ban, d, p) {
       const date = b.dataset.tdate, key = `${ban}|${d}|${p}|${date}`;
       const t = ttPicks.get(key) === b.dataset.tpick ? null : b.dataset.tpick;   // 같은 걸 다시 누르면 지움
       b.disabled = true;
-      const { error } = await sb.rpc("set_tt_teacher", { p_ban: ban, p_day: d, p_period: p, p_on_date: date, p_teacher: t });
-      if (error && /no permission/.test(error.message || "")) { ttEditor = false; mine = false; draw(); return toast("선생님을 고를 권한이 없어요", true); }
-      if (error) { b.disabled = false; return toast("저장하지 못했어요. 잠시 뒤 다시 시도해 주세요", true); }
-      if (t) ttPicks.set(key, t); else ttPicks.delete(key);
+      for (let q = p; q <= to; q++) {   // 묶인 블록은 모든 교시에 같은 선생님
+        const { error } = await sb.rpc("set_tt_teacher", { p_ban: ban, p_day: d, p_period: q, p_on_date: date, p_teacher: t });
+        if (error && /no permission/.test(error.message || "")) { ttEditor = false; mine = false; draw(); return toast("선생님을 고를 권한이 없어요", true); }
+        if (error) { b.disabled = false; return toast("저장하지 못했어요. 잠시 뒤 다시 시도해 주세요", true); }
+        const k = `${ban}|${d}|${q}|${date}`;
+        if (t) ttPicks.set(k, t); else ttPicks.delete(k);
+      }
       toast(t ? `${ban}반 친구들 시간표에도 적용했어요` : "선택을 지웠어요");
       const y = $("studyModal").querySelector(".study-sheet")?.scrollTop || 0;
       draw();
@@ -173,23 +186,36 @@ async function openTtCell(ban, d, p) {
 // 칸 아래 작은 줄은 42기의 분반 자리에 그 과목 선생님을, 수업 외 활동(자율 · 동아리 · R&E)은 '전체'를 씁니다.
 const TT_DAY_CLASS = ["mon", "tue", "wed", "thu", "fri"];
 const colorIdx43 = (s) => SUBJECTS_43.findIndex(([x]) => x === s) % 13;
+// 그 요일 p 교시에서 시작해 같은 수업이 이어지는 마지막 교시. 블록수업 · R&E · 동아리처럼 이어지는 교시는 표에서 한 칸으로 묶습니다.
+// 쉬는 시간이 20분을 넘으면(점심을 사이에 둔 4 · 5교시) 이어진 것으로 보지 않습니다.
+function ttBlockEnd(tt, d, p, last) {
+  const min = (t) => +t.slice(0, 2) * 60 + +t.slice(3);
+  let to = p;
+  while (to < last && tt[`${d}-${to + 1}`] === tt[`${d}-${p}`] && min(PERIOD_TIME[to + 1][0]) - min(PERIOD_TIME[to][1]) <= 20) to++;
+  return to;
+}
 function ttGridHtml(ban = myBan()) {
   const tt = classTimetable(ban);
   if (!Object.keys(tt).length) return `<div class="study-empty">${ban ? `${ban}반 시간표는 아직 없어요` : "시간표가 아직 없어요"}</div>`;
   let rows = "";
-  for (let p = 1; p <= lastPeriod(tt); p++) {
+  const last = lastPeriod(tt), taken = {};   // taken[요일]: 위에서 묶은 칸이 차지한 마지막 교시
+  for (let p = 1; p <= last; p++) {
     rows += `<tr><td class="period-col">${p}</td>` + TT_DAYS.map((d) => {
+      if (taken[d] >= p) return "";   // 위 칸(rowspan)이 이 자리까지 차지함
       const s = tt[`${d}-${p}`];
       if (!s) return `<td><div class="empty-cell"></div></td>`;
-      if (!isSubject43(s)) return `<td class="common-cell"><div class="class-cell"><div class="subj-name">${esc(s)}</div><div class="ban-name">전체</div></div></td>`;
+      const to = taken[d] = ttBlockEnd(tt, d, p, last);
+      const span = to > p ? ` rowspan="${to - p + 1}"` : "";
+      if (!isSubject43(s)) return `<td class="common-cell"${span}><div class="class-cell"><div class="subj-name">${esc(s)}</div><div class="ban-name">전체</div></div></td>`;
       // 선생님 이름은 칸을 누르면 나옵니다 (openTtCell)
-      // 색은 칸(td)에 칠합니다: 여백 없이 칸을 꽉 채우도록
-      return `<td class="color-${colorIdx43(s)}" data-tcell="${ban}|${d}|${p}"><div class="class-cell"><div class="subj-name">${esc(subjName(s))}</div></div></td>`;
+      // 색은 칸(td)에 칠합니다: 묶인 칸도 높이만큼 꽉 차도록 (칸 사이 여백은 css/timetable.css 의 td padding)
+      return `<td class="color-${colorIdx43(s)}"${span} data-tcell="${ban}|${d}|${p}|${to}"><div class="class-cell"><div class="subj-name">${esc(subjName(s))}</div></div></td>`;
     }).join("") + "</tr>";
   }
   const used = SUBJECTS_43.map(([s]) => s).filter((s) => Object.values(tt).includes(s));
   const legend = used.map((s) => `<div class="legend-item"><div class="legend-dot color-${colorIdx43(s)}"></div><span>${esc(subjName(s))}</span></div>`).join("");
-  return `<div class="timetable-wrap">
+  return `<div class="tt-tools">${ttFontHtml()}</div>
+    <div class="timetable-wrap">
       <table class="timetable">
         <thead><tr><th></th>${TT_DAYS.map((d, i) => `<th class="day-header ${TT_DAY_CLASS[i]}">${d}요일</th>`).join("")}</tr></thead>
         <tbody>${rows}</tbody>
@@ -351,8 +377,18 @@ function renderTimetable() {
 // 시간표 칸을 누르면 그 수업의 선생님 (격주 과목은 이번 주 선생님 고르기)
 function bindTtCells() {
   $("studyView").querySelectorAll("[data-tcell]").forEach((c) => c.onclick = () => {
-    const [ban, d, p] = c.dataset.tcell.split("|");
-    openTtCell(+ban, d, +p);
+    const [ban, d, p, to] = c.dataset.tcell.split("|");
+    openTtCell(+ban, d, +p, +to);
+  });
+  // 글자 크기 버튼: 다시 그리지 않고 html 의 data-tt-font 만 바꿉니다
+  $("studyView").querySelectorAll("[data-ttfont]").forEach((b) => b.onclick = () => {
+    ttFont = b.dataset.ttfont;
+    try { localStorage.setItem(TT_FONT_KEY, ttFont); } catch {}
+    document.documentElement.dataset.ttFont = ttFont;
+    $("studyView").querySelectorAll("[data-ttfont]").forEach((x) => {
+      x.classList.toggle("on", x === b);
+      x.setAttribute("aria-pressed", x === b);
+    });
   });
 }
 
@@ -481,7 +517,7 @@ function generateWallpaper() {
   const canvas = document.createElement("canvas");
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext("2d");
-  const FONT = "'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif";
+  const FONT = "'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif";
   const txt = dark ? "#e8e8f0" : "#1a1a26", dim = dark ? "#8888aa" : "#6b6b85";
   if (dark) {
     const g = ctx.createLinearGradient(0, 0, W, H);

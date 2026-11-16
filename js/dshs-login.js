@@ -29,7 +29,7 @@ async function silentLogin() {
     sessionStorage.setItem(SILENT_BACK, location.search);
     const { body } = await dshsCall("login", { return_to: location.origin + location.pathname, silent: true });
     if (body.silent === true && body.url) { location.replace(body.url); return true; }
-  } catch {}
+  } catch { }
   return false;
 }
 // 돌아오면(?dshs=silent) 다녀오기 전 주소로 바꿉니다. 성공했으면 # 뒤의 일회용 토큰은 그대로 둡니다.
@@ -37,7 +37,7 @@ function silentReturned() {
   if (new URLSearchParams(location.search).get("dshs") !== "silent") return;
   silentReturned.back = true;
   let q = "";
-  try { q = sessionStorage.getItem(SILENT_BACK) || ""; sessionStorage.removeItem(SILENT_BACK); } catch {}
+  try { q = sessionStorage.getItem(SILENT_BACK) || ""; sessionStorage.removeItem(SILENT_BACK); } catch { }
   history.replaceState(null, "", location.pathname + q + location.hash);
 }
 
@@ -102,7 +102,7 @@ function paintDshs() {
   </div>`;
   $("dshsHintGo").onclick = openSettings;
   $("dshsHintX").onclick = () => {
-    try { localStorage.setItem(DSHS_HINT_KEY, "1"); } catch {}
+    try { localStorage.setItem(DSHS_HINT_KEY, "1"); } catch { }
     box.innerHTML = "";
   };
 }
@@ -140,6 +140,7 @@ function openDshsDetail(r) {
 const THEMES = [
   ["dark", "다크", "#0a0a0f", "#7c6fe0"],
   ["light", "라이트", "#f5f5fa", "#6a5cd6"],
+  ["simple", "심플", "#ffffff", "#0076c0"],
   ["ocean", "바다", "#07111b", "#3fa7e0"],
   ["forest", "숲", "#0a120d", "#5fbf7a"],
   ["coco", "코코", "#f2f7f3", "#2f9a52"],
@@ -151,11 +152,11 @@ function themeHtml() {
   return `<div class="set-row" style="display:block"><b>화면 테마</b>
     <span class="ev-hint">고르지 않으면 기기 설정(다크 · 라이트)을 따라가요</span>
     <div class="theme-grid">${THEMES.map(([k, label, bg, ac]) =>
-      `<button type="button" data-theme-pick="${k}"${curTheme() === k ? ' class="on"' : ""}><i style="background:linear-gradient(135deg, ${bg} 50%, ${ac} 50%)"></i>${label}</button>`).join("")}</div></div>`;
+    `<button type="button" data-theme-pick="${k}"${curTheme() === k ? ' class="on"' : ""}><i style="background:linear-gradient(135deg, ${bg} 50%, ${ac} 50%)"></i>${label}</button>`).join("")}</div></div>`;
 }
 function bindTheme() {
   $("studyModal").querySelectorAll("[data-theme-pick]").forEach((b) => b.onclick = () => {
-    try { localStorage.setItem(THEME_KEY, b.dataset.themePick); } catch {}
+    try { localStorage.setItem(THEME_KEY, b.dataset.themePick); } catch { }
     window.applyTheme?.();
     $("studyModal").querySelectorAll("[data-theme-pick]").forEach((x) => x.classList.toggle("on", x === b));
   });
@@ -266,7 +267,7 @@ async function loginWithDshs() {
       return;
     }
     why = ok ? "nourl" : "server";
-  } catch {}
+  } catch { }
   logLogin("start_fail", why);
   showErr("dshs.app 로그인을 시작하지 못했어요. 잠시 뒤 다시 시도해 주세요.");
   $("doDshsLogin").disabled = false;
@@ -291,7 +292,7 @@ async function gateLogin() {
       return;
     }
     why = ok ? "nourl" : "server";
-  } catch {}
+  } catch { }
   logLogin("start_fail", why);
   b.disabled = false;
   openAuth();
@@ -312,7 +313,7 @@ function newHandoff() {
   if (!isInstalledApp()) return undefined;
   const key = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(32)))).replace(/[+/=]/g, "");
   waitHandoff.h = { key, at: Date.now() };
-  try { sessionStorage.removeItem(DSHS_HAND_KEY); } catch {}
+  try { sessionStorage.removeItem(DSHS_HAND_KEY); } catch { }
   return key;
 }
 
@@ -333,7 +334,7 @@ function openDshsLogin(url, handoff) {
   const w = window.open(url, "_blank");
   if (w) waitHandoff.win = w;
   else {
-    try { sessionStorage.setItem(DSHS_HAND_KEY, JSON.stringify(waitHandoff.h)); } catch {}
+    try { sessionStorage.setItem(DSHS_HAND_KEY, JSON.stringify(waitHandoff.h)); } catch { }
     location.href = url;
   }
   waitHandoff();
@@ -343,16 +344,16 @@ function openDshsLogin(url, handoff) {
 // 닫을 수 없는 브라우저면 "앱으로 돌아가세요" 안내가 남습니다.
 const dshsPopupLanding = () => new URLSearchParams(location.search).get("dshs") === "app" && !pendingHandoff();
 function closeDshsPopup() {
-  try { window.opener?.postMessage("dshs-handoff", location.origin); } catch {}   // 앱이 기다리지 않고 바로 받아 가게
-  try { window.close(); } catch {}
+  try { window.opener?.postMessage("dshs-handoff", location.origin); } catch { }   // 앱이 기다리지 않고 바로 받아 가게
+  try { window.close(); } catch { }
 }
 function pendingHandoff() {
   let h = waitHandoff.h;
-  try { h = JSON.parse(sessionStorage.getItem(DSHS_HAND_KEY)) || h; } catch {}
+  try { h = JSON.parse(sessionStorage.getItem(DSHS_HAND_KEY)) || h; } catch { }
   return h && Date.now() - h.at < DSHS_HAND_TTL ? h.key : null;
 }
 function clearHandoff() {
-  try { sessionStorage.removeItem(DSHS_HAND_KEY); } catch {}
+  try { sessionStorage.removeItem(DSHS_HAND_KEY); } catch { }
   waitHandoff.h = null;
 }
 
@@ -369,7 +370,7 @@ function waitHandoff() {
     try {
       const { ok, body } = await dshsCall("poll", { handoff: key });
       if (ok && !body.pending && key === pendingHandoff()) { stop(); await handoffArrived(body); }
-    } catch {}
+    } catch { }
     tick.busy = false;
   };
   const t = setInterval(tick, 3000);
@@ -387,7 +388,7 @@ function waitHandoff() {
 
 async function handoffArrived(r) {
   clearHandoff();
-  try { waitHandoff.win?.close(); } catch {}
+  try { waitHandoff.win?.close(); } catch { }
   waitHandoff.win = null;
   let ok = ["linked", "login", "joined"].includes(r.result), why = r.reason || "failed";
   if (ok && r.token) {

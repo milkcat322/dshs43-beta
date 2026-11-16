@@ -34,6 +34,7 @@ const TOTAL_CREDITS = SUBJECTS_43.reduce((a, [, c]) => a + c, 0);   // 31
 let sb = null;
 let me = null;          // { id, username, student_id, name, is_admin }
 let myAvatar = "";      // 내 프로필 사진 주소 (Gravatar. setAvatar 가 채움)
+let myMail = "";        // 프로필 사진용으로 등록한 학교 메일 (43th…@djshs.djsch.kr. 없으면 "")
 let myClasses = [];     // 내 수강 과목 [{ subject, ban }] (43기는 모든 과목 ban: null)
 let cache = { items: [], pending: [], mine: [], events: [], done: new Set(), people: new Map(), todos: null, todoGroups: null, school: [] };
 let page = "cal";       // 열린 탭: cal(내 일정) | notice(수행평가) | todo(할 일)

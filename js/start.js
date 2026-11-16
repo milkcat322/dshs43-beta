@@ -362,7 +362,8 @@ async function loadProfile() {
   if (!data) { me = null; clearSnap(); return; }
   netDown = false;
   setMe(data);
-  setAvatar(session.user.email);
+  myMail = mailFull(mailMid(session.user.user_metadata?.gravatar_email));
+  setAvatar(myMail);
   saveSnap();
   keepStorage();
   if (silentState()?.off) silentState({ off: false });   // 다시 로그인했으니 다음에 로그인 기록이 없어지면 조용한 로그인을 다시 씁니다
@@ -373,14 +374,62 @@ function setMe(data) {
   myClasses = allClassList();
 }
 
-// 프로필 사진: 로그인 이메일로 Gravatar(gravatar.com)에 올려 둔 사진을 씁니다. 주소에는 이메일 대신 그 SHA-256 값만 들어갑니다.
+// 프로필 사진용 메일: 학생이 등록한 학교 구글 메일. 꼭 43th○○@djshs.djsch.kr 모양이어야 합니다 (○○ 만 학생이 적음).
+// 내 계정의 user_metadata.gravatar_email 에 저장합니다: 계정에 붙는 값이라 기기를 바꿔도 따라오고, DB 표 · 권한은 건드리지 않습니다.
+// 등록하지 않았으면 Gravatar 를 쓰지 않고 이름 첫 글자만 보입니다.
+const MAIL_HEAD = "43th", MAIL_TAIL = "@djshs.djsch.kr";
+const MAIL_MID = /^[a-z0-9._-]{1,30}$/;   // 가운데 부분에 쓸 수 있는 글자
+// 메일 주소 → 가운데 부분 (모양이 다르면 ""). 가운데만 적은 것도 받습니다
+function mailMid(v) {
+  let m = String(v || "").trim().toLowerCase();
+  if (m.endsWith(MAIL_TAIL)) m = m.slice(0, -MAIL_TAIL.length);
+  if (m.startsWith(MAIL_HEAD)) m = m.slice(MAIL_HEAD.length);
+  return MAIL_MID.test(m) ? m : "";
+}
+const mailFull = (mid) => (mid ? MAIL_HEAD + mid + MAIL_TAIL : "");
+
+// 이메일 등록 창 (내 위치 줄의 '이메일 등록' 버튼 — js/seat.js 의 paintMyStatus)
+function openMailForm() {
+  openSheet("프로필 사진 이메일", `
+    <div class="asg-body">학교 구글 메일을 등록하면, 그 메일로 <a href="https://gravatar.com" target="_blank" rel="noopener">gravatar.com</a> 에 올려 둔 사진이 내 프로필에 보여요. 올려 둔 사진이 없으면 무늬 그림이 보여요.</div>
+    <label class="study-label" for="mailMid">학교 메일</label>
+    <div class="mail-field"><span>${MAIL_HEAD}</span>
+      <input class="study-input" id="mailMid" maxlength="30" autocomplete="off" autocapitalize="off" spellcheck="false" value="${esc(mailMid(myMail))}">
+      <span>${MAIL_TAIL}</span></div>
+    <div class="study-err" id="mailErr"></div>
+    <button class="study-submit" id="mailSave">${myMail ? "바꾸기" : "등록"}</button>
+    ${myMail ? `<button class="study-btn wide" id="mailClear">등록한 이메일 지우기</button>` : ""}
+    <div class="study-foot" style="text-align:left">메일 주소는 내 계정에만 저장돼요. 사진을 찾을 때는 주소를 알아볼 수 없게 바꾼 값만 gravatar.com 에 보내요.</div>`);
+  const err = (msg) => { $("mailErr").textContent = msg; $("mailErr").classList.add("show"); };
+  const save = async (mid) => {
+    $("mailSave").disabled = true;
+    const { error } = await sb.auth.updateUser({ data: { gravatar_email: mailFull(mid) || null } });
+    if (error) { $("mailSave").disabled = false; return err("저장하지 못했어요. 잠시 뒤 다시 시도해 주세요"); }
+    myMail = mailFull(mid);
+    setAvatar(myMail);
+    closeModal();
+    paintMyStatus();
+    toast(mid ? "이메일을 등록했어요" : "등록한 이메일을 지웠어요");
+  };
+  $("mailSave").onclick = () => {
+    const mid = mailMid($("mailMid").value);
+    if (!mid) { err(`${MAIL_HEAD} 뒤에 올 부분을 영문 · 숫자로 적어 주세요`); return $("mailMid").focus(); }
+    save(mid);
+  };
+  $("mailMid").onkeydown = (e) => { if (e.key === "Enter" && !e.isComposing) $("mailSave").click(); };
+  if ($("mailClear")) $("mailClear").onclick = () => save("");
+  $("mailMid").focus();
+}
+
+// 프로필 사진: 등록한 메일로 Gravatar(gravatar.com)에 올려 둔 사진을 씁니다. 등록한 메일이 없으면 Gravatar 에 아무것도 묻지 않습니다. 주소에는 이메일 대신 그 SHA-256 값만 들어갑니다.
 // 올려 둔 사진이 없으면 Gravatar 가 이메일마다 다른 무늬(identicon)를 주고, 사진을 못 받으면(오프라인 등) 이름 첫 글자가 그대로 보입니다.
 // 다른 학생은 이메일을 알 수 없어 이름 첫 글자만 보입니다.
 async function setAvatar(email) {
   const mail = (email || "").trim().toLowerCase();
-  if (!mail || setAvatar.mail === mail) return;
+  if (setAvatar.mail === mail) return;
   setAvatar.mail = mail;
   myAvatar = "";
+  if (!mail) return paintAvatar();   // 등록한 메일이 없음 → 사진을 떼고 이름 첫 글자만
   try {
     const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(mail));
     if (setAvatar.mail !== mail) return;   // 그사이 다른 계정으로 바뀜
@@ -392,11 +441,17 @@ async function setAvatar(email) {
 // 내 프로필 칸(.student-avatar[data-me])에 사진을 얹습니다. 다 받은 뒤에 얹으므로 그 전에는 이름 첫 글자가 보입니다.
 function paintAvatar() {
   const box = document.querySelector(".student-avatar[data-me]");
-  if (!box || !myAvatar || box.querySelector("img")) return;
+  if (!box) return;
+  if (!myAvatar) { box.querySelector("img")?.remove(); return; }
+  if (box.querySelector("img")?.src === myAvatar) return;
   const img = new Image();
   img.alt = "";
   img.referrerPolicy = "no-referrer";
-  img.onload = () => { if (!box.querySelector("img")) box.append(img); };
+  img.onload = () => {   // 메일을 바꿔 사진 주소가 달라졌으면 전 사진을 새 사진으로 바꿉니다
+    if (img.src !== myAvatar) return;
+    box.querySelector("img")?.remove();
+    box.append(img);
+  };
   img.src = myAvatar;
 }
 

@@ -1,9 +1,11 @@
 /* dshs43.app — css/themes.css
-   화면 테마 (밝은 화면 · 바다 · 숲 · 코코 · 벚꽃)
+   화면 테마 (밝은 화면 · 심플 · 바다 · 숲 · 코코 · 벚꽃)
    index.html 에 적힌 순서대로 읽습니다 (base → timetable → app → study → calendar → events → mobile → themes).
    같은 선택자는 뒤 파일이 앞 파일을 덮어쓰므로 순서를 바꾸지 않습니다. */
 /* ---------- 화면 테마 (설정 → 화면 테마) ----------
-   html 의 data-theme 이 테마 이름(dark · light · ocean · forest · coco · sakura), data-tone 이 밝기(dark · light)입니다.
+   html 의 data-theme 이 테마 이름(dark · light · simple · ocean · forest · coco · sakura), data-tone 이 밝기(dark · light)입니다.
+   테마를 더할 때 고칠 곳 세 군데: 이 파일 맨 아래의 data-theme 블록, js/dshs-login.js 의 THEMES(설정 창 버튼),
+   index.html 맨 위 스크립트의 TONE · BG (여기에 없는 이름은 적용되지 않습니다).
    밝은 테마(data-tone="light")는 아래 규칙으로 어두운 배경용 연한 글자색을 진하게 바꾸고,
    테마마다 다른 색은 맨 아래 data-theme 블록에서 변수만 바꿉니다. */
 :root[data-tone="light"] {
@@ -55,6 +57,16 @@
 :root[data-tone="light"] .fcx-tt-in { color: rgba(51,65,85,0.7); }
 :root[data-tone="light"] .study-modal { background: rgba(20,20,40,0.35); }
 
+/* 심플: BOJ(백준) 화면 색. 흰 바탕 + 파랑(#0076c0), 글자는 회색 계열(#333 · #555 · #999).
+   --accent3 는 "맞았습니다" 초록(#009874), --accent2 는 짙은 파랑(#0f4c81)입니다.
+   밝은 테마라 index.html 의 TONE 은 light, BG 는 #ffffff 로 맞춰 둡니다. */
+:root[data-theme="simple"] {
+  --bg: #ffffff; --surface: #ffffff; --card: #f7f7f7; --border: #dddddd;
+  --accent1: #0076c0; --accent2: #0f4c81; --accent3: #009874;
+  --text: #333333; --text-dim: #555555; --text-muted: #999999;
+  --glow: rgba(0, 118, 192, 0.22); --bar-rgb: 255,255,255;
+}
+
 /* 바다: 짙은 남색 + 청록 */
 :root[data-theme="ocean"] {
   --bg: #07111b; --surface: #0c1824; --card: #122232; --border: #1f3448;
@@ -86,6 +98,6 @@
 
 /* 설정의 화면 테마 고르기 */
 .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 8px 0 4px; }
-.theme-grid button { display: flex; flex-direction: column; align-items: center; gap: 5px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 9px 2px 7px; font-size: 12px; font-weight: 600; font-family: 'Noto Sans KR', sans-serif; color: var(--text-dim); cursor: pointer; }
+.theme-grid button { display: flex; flex-direction: column; align-items: center; gap: 5px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 9px 2px 7px; font-size: 12px; font-weight: 600; font-family: 'Pretendard Variable', 'Pretendard', sans-serif; color: var(--text-dim); cursor: pointer; }
 .theme-grid button.on { border-color: var(--accent1); color: var(--text); box-shadow: 0 0 0 1px var(--accent1) inset; }
 .theme-grid i { width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(128,128,128,0.35); }

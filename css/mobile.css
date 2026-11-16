@@ -69,10 +69,11 @@
   .timetable:not(.cmp-table) th { padding: 8px 0; letter-spacing: 0; }
   .timetable:not(.cmp-table) th:first-child { width: 22px; }
   .timetable:not(.cmp-table) th.day-header { font-size: 12px; }
-  .timetable:not(.cmp-table) td { min-width: 0; padding: 0; height: 46px; }
+  .timetable:not(.cmp-table) td { min-width: 0; padding: 1px; height: 46px; }
   .timetable:not(.cmp-table) td.period-col { width: 22px; min-width: 0; font-size: 10px; }
-  .timetable:not(.cmp-table) .class-cell { padding: 2px 1px; border-radius: 0; min-height: 46px; overflow: hidden; word-break: keep-all; overflow-wrap: anywhere; }
-  .timetable:not(.cmp-table) .class-cell .subj-name { font-size: 10px; line-height: 1.2; letter-spacing: -0.03em; }
+  .timetable:not(.cmp-table) .class-cell { padding: 3px 3px; border-radius: 0; min-height: 44px; overflow: hidden; word-break: keep-all; overflow-wrap: anywhere; }
+  :root { --tt-font: 11px; }   /* 폰에서의 시간표 과목 글씨 크기 (칸이 좁아 더 키우면 5글자 과목이 두 줄이 됩니다) */
+  .timetable:not(.cmp-table) .class-cell .subj-name { line-height: 1.2; letter-spacing: -0.03em; }
   .legend { margin-top: 12px; padding: 12px 14px; }
 
   /* 내 일정 · 수행평가 · 할 일 */
@@ -105,5 +106,5 @@
   .study-toast { width: max-content; max-width: calc(100vw - 28px); }
 }
 @media (max-width: 374px) {
-  .timetable:not(.cmp-table) .class-cell .subj-name { font-size: 9px; }
+  :root { --tt-font: 10px; }   /* 아주 좁은 폰 */
 }
