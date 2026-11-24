@@ -971,3 +971,5 @@ table.timetable {
    padding: 2px 6px;
    font-weight: 700;
 }
+/* 동아리 칸: 누르면 같은 동아리 명단 (openClubSheet) */
+.timetable td.club-cell { cursor: pointer; }

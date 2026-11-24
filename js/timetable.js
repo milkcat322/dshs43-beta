@@ -10,6 +10,40 @@
 // 화요일 8 · 9교시 동아리, 목요일 5~7교시 R&E, 월요일 7교시 자율(학급자치)은 모든 반이 같습니다.
 // (6반은 받은 시간표대로 월요일 7교시 '나와 우리', 8 · 9교시 '자생탐'까지 넣었습니다)
 const TT_CLUB = ",동아리,동아리";
+// 학번 → [학술동아리, 문화예술동아리] (학교 "학생별 학술 · 문예동아리" 명단, 2026-11-24). 학년이 바뀌거나 동아리를 옮기면 다시 만듭니다.
+const MY_CLUBS_43 = {"1101":["파인애플","사부작 힐링 클럽"],"1102":["C.C","페리아고게"],"1103":["시그마","글로벌리더"],"1104":["C.C","마크로스코프"],"1105":["로보티즈","플스"],"1106":["시그마","수학자의 노트"],"1107":["CHEM","사부작 힐링 클럽"],"1108":["무한상상","과학자의 서재"],"1109":["MATHrix","마크로스코프"],"1110":["MATHrix","마인드 앤 머슬"],"1111":["LIFE","공간문화탐구"],"1112":["파이","수학자의 노트"],"1113":["파인애플","Deframe"],"1114":["로보티즈","글로벌리더"],"1115":["Chal.C.","과학자의 서재"],"1116":["Blitz","Echonomy"],"1201":["LIFE","글로벌리더"],"1202":["Blitz","글로벌리더"],"1203":["LIFE","사부작 힐링 클럽"],"1204":["Blitz","Echonomy"],"1205":["BIO","사부작 힐링 클럽"],"1206":["Blitz","Deframe"],"1207":["별누리","사부작 힐링 클럽"],"1208":["C.C","통계나무"],"1209":["파인애플","드림마인드랩"],"1210":["수랑사랑","통계나무"],"1211":["CHEM","SF영화 감상반"],"1212":["C.C","Deframe"],"1213":["C.C","통계나무"],"1214":["파인애플","고지행"],"1215":["C.C","Mind Data Lab"],"1216":["C.C","Deframe"],"1301":["C.C","드림마인드랩"],"1302":["MATHrix","숨과쉼"],"1303":["수랑사랑","공간문화탐구"],"1304":["로보티즈","플스"],"1305":["로보티즈","Echonomy"],"1306":["로보티즈","마크로스코프"],"1307":["Chal.C.","숨과쉼"],"1308":["별누리","통계나무"],"1309":["BIO","Echonomy"],"1310":["BIO","페리아고게"],"1311":["별누리","마인드 앤 머슬"],"1312":["시그마","드림마인드랩"],"1313":["파이","통계나무"],"1314":["LIFE","숨과쉼"],"1315":["MATHrix","숨과쉼"],"1316":["별누리","숨과쉼"],"1401":["CHEM","통계나무"],"1402":["Chal.C.","통계나무"],"1403":["Chal.C.","과학자의 서재"],"1404":["BIO","Deframe"],"1405":["수랑사랑","페리아고게"],"1406":["CHEM","글로벌리더"],"1407":["수랑사랑","공간문화탐구"],"1408":["로보티즈","Echonomy"],"1409":["파인애플","글로벌리더"],"1410":["파인애플","마크로스코프"],"1411":["수랑사랑","마크로스코프"],"1412":["로보티즈","플스"],"1413":["CHEM","글로벌리더"],"1414":["LIFE","공간문화탐구"],"1415":["로보티즈","플스"],"1416":["Blitz","Echonomy"],"1501":["로보티즈","마크로스코프"],"1502":["CHEM","Deframe"],"1503":["파인애플","과학자의 서재"],"1504":["수랑사랑","마인드 앤 머슬"],"1505":["Blitz","마인드 앤 머슬"],"1506":["무한상상","과학자의 서재"],"1507":["별누리","드림마인드랩"],"1508":["파이","마인드 앤 머슬"],"1509":["무한상상","마인드 앤 머슬"],"1510":["Chal.C.","통계나무"],"1511":["Blitz","사부작 힐링 클럽"],"1512":["Chal.C.","고지행"],"1513":["무한상상","마크로스코프"],"1514":["무한상상","공간문화탐구"],"1515":["수랑사랑","과학자의 서재"],"1516":["Blitz","마크로스코프"],"1601":["파인애플","Deframe"],"1602":["BIO","드림마인드랩"],"1603":["CHEM","Echonomy"],"1604":["MATHrix","SF영화 감상반"],"1605":["무한상상","글로벌리더"],"1606":["LIFE","서킷 트레이닝"],"1607":["무한상상","SF영화 감상반"],"1608":["시그마","드림마인드랩"],"1609":["Chal.C.","과학자의 서재"],"1610":["CHEM","통계나무"],"1611":["파이","Echonomy"],"1612":["Blitz","공간문화탐구"],"1613":["MATHrix","마크로스코프"],"1614":["MATHrix","플스"],"1615":["BIO","드림마인드랩"],"1616":["수랑사랑","마크로스코프"]};
+const CLUB_KIND = ["학술", "문예"], CLUB_FULL = ["학술동아리", "문화예술동아리"];
+// 다가오는 화요일(오늘 포함)이 학사일정의 학술동아리 · 문화예술동아리 날이면 { kind: 0 학술 | 1 문예, label: "11/24" }
+function clubWeek() {
+  if (!acadList) return null;
+  const d = new Date();
+  d.setDate(d.getDate() + ((2 - d.getDay() + 7) % 7));
+  const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  const e = acadList.find((x) => x.start === key && CLUB_FULL.includes(x.name) && x.grades.includes(1));
+  return e ? { kind: CLUB_FULL.indexOf(e.name), label: `${d.getMonth() + 1}/${d.getDate()}` } : null;
+}
+// 동아리 칸: 그 학생의 이번 주 동아리 (명단에 없으면 '학술동아리' · '문예동아리', 동아리 없는 주는 '동아리')
+function clubCellHtml(span, sid) {
+  const w = clubWeek(), mine = MY_CLUBS_43[sid];
+  const name = w ? (mine ? mine[w.kind] : CLUB_KIND[w.kind] + "동아리") : "동아리";
+  const sub = w ? `${mine ? CLUB_KIND[w.kind] + " · " : ""}${w.label}` : "전체";
+  return `<td class="common-cell${mine ? " club-cell" : ""}"${span}${mine ? ` data-club="${sid}"` : ""}><div class="class-cell"><div class="subj-name">${esc(name)}</div><div class="ban-name">${esc(sub)}</div></div></td>`;
+}
+// 동아리 칸을 누르면 그 학생의 학술 · 문예 동아리와 같은 동아리 학생 명단 (이번 주 동아리가 위). 이름을 누르면 그 학생 시간표
+function openClubSheet(sid) {
+  const mine = MY_CLUBS_43[sid];
+  if (!mine) return;
+  const w = clubWeek(), names = new Map(roster().map((x) => [x.sid, x.name]));
+  openSheet("동아리", (w ? [w.kind, 1 - w.kind] : [0, 1]).map((k) => {
+    const list = Object.keys(MY_CLUBS_43).filter((s) => MY_CLUBS_43[s][k] === mine[k]).map(Number).sort((a, b) => a - b);
+    return `<label class="study-label">${CLUB_FULL[k]} · <b>${esc(mine[k])}</b> · ${list.length}명${w?.kind === k ? ` <span class="ev-hint">이번 주 ${w.label}</span>` : ""}</label>
+      <div class="tt-people">${list.map((s) => `<button class="ban-chip" data-club-sid="${s}">${esc(names.get(s) || String(s))}<small>${s}</small></button>`).join("")}</div>`;
+  }).join(""));
+  document.querySelectorAll("[data-club-sid]").forEach((b) => b.onclick = () => {
+    closeModal();
+    openTtView({ type: "student", sid: +b.dataset.clubSid });
+  });
+}
 const TIMETABLE_43 = {
   1: {
     월: "생명과학,생명과학,적분과 통계,체육,물리,물리,자율", 화: "프로그래밍,물리,화학,화학,지구과학,한국사,국어" + TT_CLUB,
@@ -210,7 +244,7 @@ function ttBlockEnd(tt, d, p, last) {
   while (to < last && tt[`${d}-${to + 1}`] === tt[`${d}-${p}`] && min(PERIOD_TIME[to + 1][0]) - min(PERIOD_TIME[to][1]) <= 20) to++;
   return to;
 }
-function ttGridHtml(ban = myBan()) {
+function ttGridHtml(ban = myBan(), sid = me?.student_id) {
   const tt = classTimetable(ban);
   if (!Object.keys(tt).length) return `<div class="study-empty">${ban ? `${ban}반 시간표는 아직 없어요` : "시간표가 아직 없어요"}</div>`;
   let rows = "";
@@ -222,6 +256,7 @@ function ttGridHtml(ban = myBan()) {
       if (!s) return `<td><div class="empty-cell"></div></td>`;
       const to = taken[d] = ttBlockEnd(tt, d, p, last);
       const span = to > p ? ` rowspan="${to - p + 1}"` : "";
+      if (s === "동아리") return clubCellHtml(span, sid);
       if (!isSubject43(s)) return `<td class="common-cell"${span}><div class="class-cell"><div class="subj-name">${esc(s)}</div><div class="ban-name">전체</div></div></td>`;
       // 선생님 이름은 칸을 누르면 나옵니다 (openTtCell)
       // 색은 칸(td)에 칠합니다: 묶인 칸도 높이만큼 꽉 차도록 (칸 사이 여백은 css/timetable.css 의 td padding)
@@ -319,7 +354,7 @@ function ttOtherHtml(v) {
         <div class="student-avatar">${esc(p.name[0])}</div>
         <div class="student-info"><h2>${esc(p.name)}</h2><div class="student-meta">학번 ${p.sid} · 1학년 ${ban}반 <span class="st-loc" data-st="${p.sid}"></span></div></div>
       </div>
-      ${ttGridHtml(ban)}`;
+      ${ttGridHtml(ban, p.sid)}`;
   }
   if (v.type === "ban") {
     const list = roster().filter((x) => banOf(x.sid) === v.ban);
@@ -328,7 +363,7 @@ function ttOtherHtml(v) {
         <div class="student-avatar subj-avatar">${v.ban}</div>
         <div class="student-info"><h2>1학년 ${v.ban}반</h2><div class="student-meta">${list.length}명</div></div>
       </div>
-      ${ttGridHtml(v.ban)}
+      ${ttGridHtml(v.ban, 0)}
       <div class="study-section">${v.ban}반 학생 <span class="tt-hint">— 누르면 시간표</span></div>
       <div class="tt-people">${list.map((x) => `<button class="ban-chip" data-sid="${x.sid}">${esc(x.name)}<small>${x.sid}</small><span class="st-loc" data-st="${x.sid}"></span></button>`).join("")}</div>`;
   }
@@ -394,6 +429,9 @@ function renderTimetable() {
 }
 // 시간표 칸을 누르면 그 수업의 선생님 (격주 과목은 이번 주 선생님 고르기)
 function bindTtCells() {
+  $("studyView").querySelectorAll("[data-club]").forEach((c) => c.onclick = () => openClubSheet(+c.dataset.club));
+  // 학사일정을 아직 안 받았으면 받은 뒤 동아리 칸을 다시 그립니다 (이번 주 학술 · 문예)
+  if (!acadList) loadAcademic().then(() => { if (acadList && page === "tt") renderTimetable(); });
   $("studyView").querySelectorAll("[data-tcell]").forEach((c) => c.onclick = () => {
     const [ban, d, p, to] = c.dataset.tcell.split("|");
     openTtCell(+ban, d, +p, +to);

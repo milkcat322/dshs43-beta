@@ -17,6 +17,7 @@
 - 43기 학번은 1000 ~ 1999 (`COHORT_SID`). 그 밖의 학생 계정은 `openOtherCohort` 로 dshs42.app 에 안내한다. 관리자 계정은 `openAdminMoved` 로 관리자 사이트(`CFG.ADMIN_URL`)에 안내한다. 관리자 기능을 이 사이트에 넣지 않는다.
 - 43기 과목 · 학점은 `SUBJECTS_43` 한 곳에서 관리한다. 지금은 분반이 없어 모든 과목 `ban: null`(= "전체 분반"). 수행평가를 안 보는 과목은 `NO_ASG_SUBJECTS`.
 - 시간표는 아직 없다. 생기면 42기 `dshs-study.js` 의 `openMyTimetable` · `myBlocks` · `ttEvents` 와 `index.html` 의 시간표 화면을 참고해 넣는다. 교시 시각은 `PERIOD_TIME` 한 곳에서만 관리한다.
+- 시간표 동아리 칸(화요일 8 · 9교시, `js/timetable.js` 의 `clubCellHtml`): 다가오는 화요일이 `academic.json` 의 학술동아리 · 문화예술동아리 날이면 그 학생의 동아리 이름(`MY_CLUBS_43`, 학번 → [학술, 문화예술], 학교 명단 PDF 에서 옮김)과 날짜를 적고, 누르면 같은 동아리 명단(`openClubSheet`)이 뜬다. 학년이 바뀌거나 동아리를 옮기면 `MY_CLUBS_43` 를 다시 만든다. 42기 사이트에도 같은 기능이 있다(`MY_CLUBS`).
 - 학생에게 보이는 기능을 바꾸면 `updates.js` 맨 위에 항목을 추가한다 (학생이 읽을 말로). 새 기능은 `major: true`.
 - `academic.json` 은 GitHub Actions 가 매일 덮어쓰므로 직접 고치지 않는다. NEIS 에 없는 일정은 `academic-extra.json` 에 적고 `node scripts/fetch-academic.mjs`.
 - 외부 서비스(dshs.app 등)는 브라우저가 아니라 Edge Function(`dshs-oauth`)을 거친다. 크롤링 · 대리 로그인은 하지 않는다.
